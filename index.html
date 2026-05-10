@@ -10,11 +10,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-window.EMAILJS_PUBLIC_KEY = 'QIa4qHaHsbai1_iqm'; // ← استبدل هذا بالـ Public Key من EmailJS
+window.EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY'; // ← استبدل هذا بالـ Public Key من EmailJS
 window.addEventListener('load', function(){
   try{
     if(typeof emailjs !== 'undefined'){
-      if(window.EMAILJS_PUBLIC_KEY === 'QIa4qHaHsbai1_iqm'){
+      if(window.EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
         console.warn('⚠️ EmailJS: Public Key not configured - emails will not be sent');
       } else {
         emailjs.init(window.EMAILJS_PUBLIC_KEY);
@@ -567,13 +567,13 @@ tr:hover td{background:rgba(255,255,255,0.025)}
     <div class="panel" id="panel-warranty">
       <div class="page-header">
         <h1>🛡️ إدارة Warranties</h1>
-        <p>Track asset warranty expiration dates</p>
+        <p><span data-i18n="page_warranty_sub">Track asset warranty expiration dates</span></p>
       </div>
       <div class="glass-card">
         <div style="overflow-x:auto">
           <table>
             <thead><tr>
-              <th data-i18n="th_asset_id">Asset ID</th><th>الاسم</th><th data-i18n="th_type">Type</th><th>الAssigned إليه</th>
+              <th data-i18n="th_asset_id">Asset ID</th><th data-i18n="th_name_short">Name</th><th data-i18n="th_type">Type</th><th>الAssigned إليه</th>
               <th>Received Date</th><th>انتهاء Warranty</th><th>Status</th><th>Actions</th>
             </tr></thead>
             <tbody id="warranty-tbody"></tbody>
@@ -588,7 +588,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
       <div class="rpt-grid" id="rpt-grid"></div>
       <div class="glass-card">
         <table>
-          <thead><tr><th>Department</th><th>Total</th><th>Assigned</th><th>Available</th><th>Maintenance</th></tr></thead>
+          <thead><tr><th data-i18n="th_dept">Department</th><th data-i18n="col_total">Total</th><th data-i18n="th_assigned_text">Assigned</th><th data-i18n="th_available_text">Available</th><th data-i18n="th_maintenance_text">Maintenance</th></tr></thead>
           <tbody id="dept-tbody"></tbody>
         </table>
       </div>
@@ -598,7 +598,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
     <div class="panel" id="panel-users">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
         <div><h1>👥 <span data-i18n="page_users_text">Users</span></h1><p data-i18n="page_users_sub">Manage admin accounts</p></div>
-        <button class="btn btn-green" onclick="openUserModal()">+ Add Admin</button>
+        <button class="btn btn-green" onclick="openUserModal()"><span data-i18n="btn_add_admin">+ Add Admin</span></button>
       </div>
       <div id="users-list"></div>
     </div>
@@ -624,31 +624,31 @@ tr:hover td{background:rgba(255,255,255,0.025)}
           style="border:2px dashed rgba(46,204,113,0.3);border-radius:12px;padding:48px 20px;
           text-align:center;cursor:pointer;background:rgba(46,204,113,0.04);transition:all 0.2s">
           <div style="font-size:48px;margin-bottom:14px">📊</div>
-          <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">Drag & drop Excel file here or click to browse</h3>
-          <p style="font-size:13px;color:var(--text2);line-height:1.7">Supports .xlsx, .xls, and .csv<br>
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:8px"><span data-i18n="import_drop_title">Drag & drop Excel file here or click to browse</span></h3>
+          <p style="font-size:13px;color:var(--text2);line-height:1.7"><span data-i18n="import_supports">Supports .xlsx, .xls, and .csv</span><br>
           AI understands any format and classifies assets automatically</p>
           <input type="file" id="file-inp" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(event)">
         </div>
         <div id="import-progress" style="display:none;padding:16px 0">
           <div id="step1" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;font-size:13px">
-            <span id="s1i">📂</span><span>Reading file...</span></div>
+            <span id="s1i">📂</span><span><span data-i18n="step1">Reading file...</span></span></div>
           <div id="step2" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;font-size:13px">
-            <span id="s2i">🤖</span><span>Analyzing with AI...</span></div>
+            <span id="s2i">🤖</span><span><span data-i18n="step2">Analyzing with AI...</span></span></div>
           <div id="step3" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:13px">
-            <span id="s3i">👁️</span><span>Previewing results...</span></div>
+            <span id="s3i">👁️</span><span><span data-i18n="step3">Previewing results...</span></span></div>
         </div>
         <div id="import-preview" style="display:none">
           <div id="import-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px"></div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;margin-bottom:10px">
-            <h3 style="font-size:14px;font-weight:700">Data Preview</h3>
+            <h3 style="font-size:14px;font-weight:700"><span data-i18n="preview_title">Data Preview</span></h3>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost btn-sm" onclick="resetImport()">↩ Cancel</button>
-              <button class="btn btn-primary" id="confirm-btn" onclick="confirmImport()">✅ Import All</button>
+              <button class="btn btn-ghost btn-sm" onclick="resetImport()"><span data-i18n="btn_cancel">↩ Cancel</span></button>
+              <button class="btn btn-primary" id="confirm-btn" onclick="confirmImport()"><span data-i18n="btn_import_all">✅ Import All</span></button>
             </div>
           </div>
           <div style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;max-height:320px;overflow-y:auto">
             <table><thead><tr>
-              <th data-i18n="th_type">Type</th><th>الاسم</th><th>Brand</th><th data-i18n="th_serial">Serial Number</th>
+              <th data-i18n="th_type">Type</th><th data-i18n="th_name_short">Name</th><th>Brand</th><th data-i18n="th_serial">Serial Number</th>
               <th>المستخدم</th><th>Department</th><th>Status</th><th>Warranty</th>
             </tr></thead><tbody id="preview-tbody"></tbody></table>
           </div>
@@ -659,17 +659,17 @@ tr:hover td{background:rgba(255,255,255,0.025)}
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
           <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
             <div style="font-size:24px;margin-bottom:8px">📂</div>
-            <div style="font-size:12px;font-weight:700;margin-bottom:4px">Upload Any File</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px"><span data-i18n="card_upload_title">Upload Any File</span></div>
             <div style="font-size:11px;color:var(--text2)">Any Excel format — any column names</div>
           </div>
           <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
             <div style="font-size:24px;margin-bottom:8px">🤖</div>
-            <div style="font-size:12px;font-weight:700;margin-bottom:4px">AI Analyzes</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px"><span data-i18n="card_ai_title">AI Analyzes</span></div>
             <div style="font-size:11px;color:var(--text2)">Understands columns and classifies each asset automatically</div>
           </div>
           <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
             <div style="font-size:24px;margin-bottom:8px">✅</div>
-            <div style="font-size:12px;font-weight:700;margin-bottom:4px">Review & Import</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px"><span data-i18n="card_review_title">Review & Import</span></div>
             <div style="font-size:11px;color:var(--text2)">شوف المعاينة واضغط Imported — يضاف كل شيء فوراً</div>
           </div>
         </div>
@@ -700,7 +700,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 <div class="ov" id="delete-all-ov" style="z-index:9999;position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)">
   <div class="modal" style="max-width:440px;text-align:center">
     <div style="font-size:48px;margin-bottom:12px">⚠️</div>
-    <h2 style="color:#ec7063;margin-bottom:10px">Delete All Assets</h2>
+    <h2 style="color:#ec7063;margin-bottom:10px"><span data-i18n="delete_all_title">Delete All Assets</span></h2>
     <p style="font-size:13px;color:var(--w70);margin-bottom:20px;line-height:1.8">
       This will permanently delete <strong id="delete-count" style="color:#ec7063;font-size:16px">0</strong> assets..<br>
       This action <strong>cannot be undone</strong>.
@@ -712,7 +712,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
         oninput="document.getElementById('delete-confirm-btn').disabled=this.value!=='DELETE'">
     </div>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-gh" onclick="const d=document.getElementById('delete-all-ov');d.style.display='none';d.classList.remove('open');document.getElementById('delete-confirm-inp').value='';document.getElementById('delete-confirm-btn').disabled=true">Cancel</button>
+      <button class="btn btn-gh" onclick="const d=document.getElementById('delete-all-ov');d.style.display='none';d.classList.remove('open');document.getElementById('delete-confirm-inp').value='';document.getElementById('delete-confirm-btn').disabled=true"><span data-i18n="btn_cancel">Cancel</span></button>
       <button id="delete-confirm-btn" class="btn" disabled
         style="background:#e74c3c;color:#fff;opacity:0.5;cursor:not-allowed"
         onclick="executeDeleteAll()"
@@ -733,7 +733,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
       <strong id="single-delete-name" style="color:#fff;font-size:15px"></strong>
     </p>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-gh" onclick="const shide=document.getElementById('single-delete-ov');shide.style.display='none';shide.classList.remove('open')">Cancel</button>
+      <button class="btn btn-gh" onclick="const shide=document.getElementById('single-delete-ov');shide.style.display='none';shide.classList.remove('open')"><span data-i18n="btn_cancel">Cancel</span></button>
       <button class="btn btn-d" id="single-delete-btn" onclick="confirmSingleDelete()">🗑️ نعم، اDELETE</button>
     </div>
   </div>
@@ -751,7 +751,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
       <div class="fg"><label>كلمة مرور جديدة (اتركها فارغة إذا ما تبي تغيرها)</label><input id="eu-pass" type="password" placeholder="••••••••"></div>
     </div>
     <div class="mf">
-      <button class="btn btn-gh" onclick="closeEditUserModal()">Cancel</button>
+      <button class="btn btn-gh" onclick="closeEditUserModal()"><span data-i18n="btn_cancel">Cancel</span></button>
       <button class="btn btn-g" onclick="saveEditUser()">💾 Save الModifiedات</button>
     </div>
   </div>
@@ -761,7 +761,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 <div id="logout-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px)">
   <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(46,204,113,0.3);border-radius:20px;padding:36px 32px;width:360px;max-width:95vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
     <div style="font-size:48px;margin-bottom:14px">👋</div>
-    <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff">Sign Out</h2>
+    <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff"><span data-i18n="logout_title">Sign Out</span></h2>
     <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px">Are you sure you want to sign out?</p>
     <div style="display:flex;gap:10px;justify-content:center">
       <button onclick="document.getElementById('logout-modal').style.display='none'"
@@ -888,12 +888,12 @@ tr:hover td{background:rgba(255,255,255,0.025)}
       </div>
     </div>
     <div class="modal-section">
-      <div class="modal-section-title">Notes</div>
+      <div class="modal-section-title"><span data-i18n="section_notes">Notes</span></div>
       <div class="fg"><textarea id="f-notes" placeholder="Any additional details..."></textarea></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-green" id="save-btn" onclick="saveAsset()">💾 Save</button>
+      <button class="btn btn-ghost" onclick="closeModal()"><span data-i18n="btn_cancel">Cancel</span></button>
+      <button class="btn btn-green" id="save-btn" onclick="saveAsset()"><span data-i18n="btn_save">💾 Save</span></button>
     </div>
   </div>
 </div>
@@ -901,7 +901,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 <!-- USER MODAL -->
 <div class="overlay" id="user-overlay">
   <div class="modal" style="max-width:420px">
-    <h2 id="user-modal-title">Add New Admin</h2>
+    <h2 id="user-modal-title"><span data-i18n="modal_add_admin">Add New Admin</span></h2>
     <div class="form-grid" style="grid-template-columns:1fr">
       <div class="fg"><label>Username *</label><input id="u-username" placeholder="username"></div>
       <div class="fg"><label>Full Name</label><input id="u-fullname" placeholder="Full Name"></div>
@@ -909,8 +909,8 @@ tr:hover td{background:rgba(255,255,255,0.025)}
       <div class="fg"><label>📧 Email (for notifications)</label><input id="u-email" type="email" placeholder="name@ntsc.gov.sa"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeUserModal()">Cancel</button>
-      <button class="btn btn-green" onclick="saveUser()">💾 Save</button>
+      <button class="btn btn-ghost" onclick="closeUserModal()"><span data-i18n="btn_cancel">Cancel</span></button>
+      <button class="btn btn-green" onclick="saveUser()"><span data-i18n="btn_save">💾 Save</span></button>
     </div>
   </div>
 </div>
@@ -1341,7 +1341,7 @@ function printPDF(id){
     <div style="font-size:12px;color:#666;margin-bottom:4px">حالة Warranty</div>
     <div style="font-size:16px;font-weight:700">${ws?ws.text:'—'}</div>
   </div>`:''}
-  ${a.notes?`<div class="notes-box"><div class="lbl">Notes</div><div>${a.notes}</div></div>`:''}
+  ${a.notes?`<div class="notes-box"><div class="lbl"><span data-i18n="section_notes">Notes</span></div><div>${a.notes}</div></div>`:''}
   <div class="status-box">
     <div class="s-label">حالة الأصل الحالية</div>
     <div class="s-val">${a.status}</div>
@@ -1620,7 +1620,7 @@ function guessType(n){
 function showImportPreview(data){
   const IS={'Laptop':'💻','Monitor':'🖥️','Phone':'📱','Printer':'🖨️','Router':'📡','Tablet':'📟','Other':'📦'};
   document.getElementById('import-stats').innerHTML=
-    '<div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">'+data.length+'</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Total Records</div></div>'+
+    '<div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">'+data.length+'</div><div style="font-size:11px;color:var(--text2);margin-top:3px"><span data-i18n="total_records">Total Records</span></div></div>'+
     '<div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center"><div style="font-size:26px;font-weight:800;color:#5dade2">'+[...new Set(data.map(d=>d.asset_type))].length+'</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Types</div></div>'+
     '<div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center"><div style="font-size:26px;font-weight:800;color:var(--gold)">'+data.filter(d=>d.assigned_to).length+'</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Assigned</div></div>';
   document.getElementById('preview-tbody').innerHTML=data.slice(0,50).map(d=>'<tr><td>'+(IS[d.asset_type]||'📦')+' '+d.asset_type+'</td><td><strong>'+d.name+'</strong></td><td>'+(d.brand||'—')+'</td><td style="font-family:monospace;font-size:11px">'+(d.serial||'—')+'</td><td>'+(d.assigned_to||'—')+'</td><td>'+(d.department||'—')+'</td><td><span class="badge '+(d.status==='Assigned'?'b-green':d.status==='صيانة'?'b-warn':'b-blue')+'">'+(d.status||'Available')+'</span></td><td style="font-size:11px">'+(d.warranty_end||'—')+'</td></tr>').join('');
@@ -1707,7 +1707,7 @@ async function sendEmailNotification(subject, body, extraDetails=''){
       console.warn('EmailJS not loaded - check Public Key setup');
       return;
     }
-    if(window.EMAILJS_PUBLIC_KEY === 'QIa4qHaHsbai1_iqm'){
+    if(window.EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
       console.warn('EmailJS Public Key not configured');
       return;
     }
@@ -1948,7 +1948,7 @@ async function doResetPassword(){
     // Update password in DB
     await DB.from('admins').update({password:newPass}).eq('id',data.id);
     // Send email with new password
-    if(typeof emailjs!=='undefined'&&window.EMAILJS_PUBLIC_KEY!=='QIa4qHaHsbai1_iqm'){
+    if(typeof emailjs!=='undefined'&&window.EMAILJS_PUBLIC_KEY!=='YOUR_PUBLIC_KEY'){
       await emailjs.send('ntsc_service','template_tiie4cv',{
         to_email:email,
         to_name:data.fullname||username,
@@ -2235,6 +2235,32 @@ const TRANSLATIONS = {
     org_sub: 'IT Asset Management',
     sys_label: 'Asset Management System',
     user_role: 'Admin',
+    th_name_short: 'Name',
+    th_received: 'Received',
+    th_warranty_end: 'Warranty End',
+    col_total: 'Total',
+    th_assigned_text: 'Assigned',
+    th_available_text: 'Available',
+    th_maintenance_text: 'Maintenance',
+    card_upload_title: 'Upload Any File',
+    card_upload_sub: 'Any Excel — any columns',
+    card_ai_title: 'AI Analyzes',
+    card_ai_sub: 'Auto-detects and classifies assets',
+    card_review_title: 'Review & Import',
+    card_review_sub: 'Preview then click Import',
+    import_drop_title: 'Drag & drop Excel file here or click to browse',
+    import_supports: 'Supports .xlsx, .xls, and .csv',
+    import_ai_desc: 'AI understands any format',
+    step1: 'Reading file...',
+    step2: 'Analyzing with AI...',
+    step3: 'Previewing results...',
+    total_records: 'Total Records',
+    preview_title: 'Data Preview',
+    btn_import_all: '✅ Import All',
+    page_warranty_sub: 'Track asset warranty expiration dates',
+    delete_confirm_title: 'Confirm Delete',
+    section_account: 'Account Info',
+    section_change_pass: 'Change Password',
     nav_assets_text: 'Assets',
     nav_import_text: 'Smart Import',
     nav_warranty_text: 'Warranties',
