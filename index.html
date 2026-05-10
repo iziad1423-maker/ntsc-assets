@@ -502,13 +502,13 @@ tr:hover td{background:rgba(255,255,255,0.025)}
         <button id="btn-en" onclick="setLang('en')" style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;background:var(--ntsc);color:#fff;transition:all 0.2s">🌐 EN</button>
         <button id="btn-ar" onclick="setLang('ar')" style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;background:transparent;color:rgba(255,255,255,0.5);transition:all 0.2s">عربي</button>
       </div>
-      <button class="nav-item active" onclick="showPanel('assets',this)"><span class="ni">📋</span> Assets</button>
-      <button class="nav-item" onclick="showPanel('import',this)"><span class="ni">🤖</span> Smart Excel Import</button>
-      <button class="nav-item" onclick="showPanel('warranty',this)"><span class="ni">🛡️</span> Warranties</button>
-      <button class="nav-item" onclick="showPanel('reports',this)"><span class="ni">📊</span> Reports</button>
+      <button class="nav-item active" onclick="showPanel('assets',this)"><span class="ni">📋</span> <span data-i18n="nav_assets_text">Assets</span></button>
+      <button class="nav-item" onclick="showPanel('import',this)"><span class="ni">🤖</span> <span data-i18n="nav_import_text">Smart Import</span></button>
+      <button class="nav-item" onclick="showPanel('warranty',this)"><span class="ni">🛡️</span> <span data-i18n="nav_warranty_text">Warranties</span></button>
+      <button class="nav-item" onclick="showPanel('reports',this)"><span class="ni">📊</span> <span data-i18n="nav_reports_text">Reports</span></button>
       <div class="nav-sep"></div>
-      <button class="nav-item" onclick="showPanel('users',this)"><span class="ni">👥</span> Users</button>
-      <button class="nav-item" onclick="showPanel('log',this)"><span class="ni">📜</span> Activity Log</button>
+      <button class="nav-item" onclick="showPanel('users',this)"><span class="ni">👥</span> <span data-i18n="nav_users_text">Users</span></button>
+      <button class="nav-item" onclick="showPanel('log',this)"><span class="ni">📜</span> <span data-i18n="nav_log_text">Activity Log</span></button>
     </nav>
     <div class="sidebar-footer">
       <button class="btn-add-main" onclick="openModal()">+ Add New Asset</button>
@@ -547,15 +547,15 @@ tr:hover td{background:rgba(255,255,255,0.025)}
             <option>Assigned</option><option>Available</option><option>Maintenance</option><option>Out of Service</option>
           </select>
           <button class="btn btn-ghost btn-sm" onclick="loadAssets()">🔄</button>
-          <button class="btn btn-ghost btn-sm" id="btn-export-csv" onclick="exportCSV()">⬇ Export CSV</button>
-          <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);color:#ec7063;border:1px solid rgba(231,76,60,0.2)" id="btn-del-all" onclick="deleteAllAssets()">🗑️ Delete All</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><span data-i18n="btn_export">⬇ Export</span> CSV</button>
+          <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);color:#ec7063;border:1px solid rgba(231,76,60,0.2)" onclick="deleteAllAssets()">🗑️ <span data-i18n="btn_delete_all_text">Delete All</span></button>
         </div>
         <div style="overflow-x:auto">
           <table>
             <thead><tr>
-              <th id="th-asset-id">Asset ID</th><th id="th-type">Type</th><th id="th-name">Name / Model</th>
-              <th id="th-serial">Serial Number</th><th>الAssigned إليه</th><th>Department</th>
-              <th id="th-status">Status</th><th id="th-warranty">Warranty</th><th id="th-actions">Actions</th>
+              <th data-i18n="th_asset_id">Asset ID</th><th data-i18n="th_type">Type</th><th data-i18n="th_name">Name / Model</th>
+              <th data-i18n="th_serial">Serial Number</th><th>الAssigned إليه</th><th>Department</th>
+              <th data-i18n="th_status">Status</th><th data-i18n="th_warranty">Warranty</th><th data-i18n="th_actions">Actions</th>
             </tr></thead>
             <tbody id="tbody"></tbody>
           </table>
@@ -573,7 +573,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
         <div style="overflow-x:auto">
           <table>
             <thead><tr>
-              <th id="th-asset-id">Asset ID</th><th>الاسم</th><th id="th-type">Type</th><th>الAssigned إليه</th>
+              <th data-i18n="th_asset_id">Asset ID</th><th>الاسم</th><th data-i18n="th_type">Type</th><th>الAssigned إليه</th>
               <th>Received Date</th><th>انتهاء Warranty</th><th>Status</th><th>Actions</th>
             </tr></thead>
             <tbody id="warranty-tbody"></tbody>
@@ -584,7 +584,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 
     <!-- REPORTS PANEL -->
     <div class="panel" id="panel-reports">
-      <div class="page-header"><h1 id="ph-reports-title">📊 Reports</h1></div>
+      <div class="page-header"><h1>📊 <span data-i18n="page_reports_text">Reports</span></h1></div>
       <div class="rpt-grid" id="rpt-grid"></div>
       <div class="glass-card">
         <table>
@@ -597,7 +597,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
     <!-- USERS PANEL -->
     <div class="panel" id="panel-users">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div><h1 id="ph-users-title">👥 Users</h1><p id="ph-users-sub">Manage admin accounts</p></div>
+        <div><h1>👥 <span data-i18n="page_users_text">Users</span></h1><p data-i18n="page_users_sub">Manage admin accounts</p></div>
         <button class="btn btn-green" onclick="openUserModal()">+ Add Admin</button>
       </div>
       <div id="users-list"></div>
@@ -605,7 +605,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 
     <!-- LOG PANEL -->
     <div class="panel" id="panel-log">
-      <div class="page-header"><h1 id="ph-log-title">📜 Activity Log</h1></div>
+      <div class="page-header"><h1>📜 <span data-i18n="page_log_text">Activity Log</span></h1></div>
       <div class="glass-card" id="log-list"></div>
     </div>
 
@@ -648,7 +648,7 @@ tr:hover td{background:rgba(255,255,255,0.025)}
           </div>
           <div style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;max-height:320px;overflow-y:auto">
             <table><thead><tr>
-              <th id="th-type">Type</th><th>الاسم</th><th>Brand</th><th id="th-serial">Serial Number</th>
+              <th data-i18n="th_type">Type</th><th>الاسم</th><th>Brand</th><th data-i18n="th_serial">Serial Number</th>
               <th>المستخدم</th><th>Department</th><th>Status</th><th>Warranty</th>
             </tr></thead><tbody id="preview-tbody"></tbody></table>
           </div>
@@ -1707,7 +1707,7 @@ async function sendEmailNotification(subject, body, extraDetails=''){
       console.warn('EmailJS not loaded - check Public Key setup');
       return;
     }
-    if(window.EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
+    if(window.EMAILJS_PUBLIC_KEY === 'QIa4qHaHsbai1_iqm'){
       console.warn('EmailJS Public Key not configured');
       return;
     }
@@ -1948,7 +1948,7 @@ async function doResetPassword(){
     // Update password in DB
     await DB.from('admins').update({password:newPass}).eq('id',data.id);
     // Send email with new password
-    if(typeof emailjs!=='undefined'&&window.EMAILJS_PUBLIC_KEY!=='YOUR_PUBLIC_KEY'){
+    if(typeof emailjs!=='undefined'&&window.EMAILJS_PUBLIC_KEY!=='QIa4qHaHsbai1_iqm'){
       await emailjs.send('ntsc_service','template_tiie4cv',{
         to_email:email,
         to_name:data.fullname||username,
@@ -2235,6 +2235,22 @@ const TRANSLATIONS = {
     org_sub: 'IT Asset Management',
     sys_label: 'Asset Management System',
     user_role: 'Admin',
+    nav_assets_text: 'Assets',
+    nav_import_text: 'Smart Import',
+    nav_warranty_text: 'Warranties',
+    nav_reports_text: 'Reports',
+    nav_users_text: 'Users',
+    nav_profile_text: 'My Account',
+    nav_log_text: 'Activity Log',
+    btn_signout_text: 'Sign Out',
+    btn_add_asset_text: '+ Add New Asset',
+    btn_delete_all_text: 'Delete All',
+    page_assets_title_text: 'Assets',
+    page_warranty_text: 'Warranties',
+    page_reports_text: 'Reports',
+    page_users_text: 'Users',
+    page_profile_text: 'Account Settings',
+    page_log_text: 'Activity Log',
   },
   ar: {
     nav_assets: '📋 الأصول والعهد',
@@ -2368,7 +2384,13 @@ let currentLang = localStorage.getItem('ntsc_lang') || 'en';
 function t(key){ return TRANSLATIONS[currentLang][key] || TRANSLATIONS['en'][key] || key; }
 
 function setLang(lang){
-  currentLang = lang;
+  // Glass transition effect
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,46,26,0.85);backdrop-filter:blur(12px);z-index:99998;transition:opacity 0.3s;opacity:0;pointer-events:none';
+  document.body.appendChild(overlay);
+  requestAnimationFrame(()=>{ overlay.style.opacity='1'; });
+  setTimeout(()=>{
+    currentLang = lang;
   localStorage.setItem('ntsc_lang', lang);
   // Update direction
   document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
@@ -2382,103 +2404,53 @@ function setLang(lang){
     bAr.style.color = lang==='ar' ? '#fff' : 'var(--w70)';
   }
   // Re-render all UI
-  applyLang();
-  renderTable();
-  renderReports();
-  renderWarrantyAlerts();
-  renderWarrantyPanel();
-  renderStats();
+    applyLang();
+    renderTable();
+    renderReports();
+    renderWarrantyAlerts();
+    renderWarrantyPanel();
+    renderStats();
+    setTimeout(()=>{ overlay.style.opacity='0'; setTimeout(()=>overlay.remove(),300); }, 50);
+  }, 150);
 }
 
 function applyLang(){
   const L = TRANSLATIONS[currentLang];
-  // Sidebar nav
-  setT('nav-assets', L.nav_assets);
-  setT('nav-import', L.nav_import);
-  setT('nav-warranty', L.nav_warranty);
-  setT('nav-reports', L.nav_reports);
-  setT('nav-users', L.nav_users);
-  setT('nav-profile', L.nav_profile);
-  setT('nav-log', L.nav_log);
-  setT('btn-add-sb', L.btn_add_asset);
-  setT('btn-signout', L.btn_signout);
-  setT('sb-org', L.org_name);
-  setT('sb-sub', L.org_sub);
-  setT('sb-syslabel', L.sys_label);
-  const roleEl = document.getElementById('sb-userrole');
-  if(roleEl && !roleEl.textContent.startsWith('@')) roleEl.textContent = L.user_role;
-  // Stats labels
-  setT('stat-lbl-0', L.stat_total);
-  setT('stat-lbl-1', L.stat_assigned);
-  setT('stat-lbl-2', L.stat_available);
-  setT('stat-lbl-3', L.stat_maintenance);
-  setT('stat-lbl-4', L.stat_warranty);
-  // Page titles
-  setT('ph-assets-title', L.page_assets_title);
-  setT('ph-assets-sub', L.page_assets_sub);
-  setT('ph-warranty-title', L.page_warranty_title);
-  setT('ph-reports-title', L.page_reports_title);
-  setT('ph-users-title', L.page_users_title);
-  setT('ph-users-sub', L.page_users_sub);
-  setT('ph-profile-title', L.page_profile_title);
-  setT('ph-profile-sub', L.page_profile_sub);
-  setT('ph-log-title', L.page_log_title);
-  // Toolbar
-  const searchEl = document.getElementById('q');
-  if(searchEl) searchEl.placeholder = '🔍 ' + L.search_placeholder;
-  updateSelect('ft', [L.filter_all_types, L.type_laptop, L.type_monitor, L.type_phone, L.type_printer, L.type_router, L.type_tablet, L.type_other]);
-  updateSelect('fs', [L.filter_all_status, L.status_assigned, L.status_available, L.status_maintenance, L.status_broken]);
-  setT('btn-export-csv', L.btn_export);
-  setT('btn-del-all', L.btn_delete_all);
-  // Table headers
-  setT('th-asset-id', L.th_asset_id);
-  setT('th-type', L.th_type);
-  setT('th-name', L.th_name);
-  setT('th-serial', L.th_serial);
-  setT('th-assigned', L.th_assigned_to);
-  setT('th-dept', L.th_dept);
-  setT('th-status', L.th_status);
-  setT('th-warranty', L.th_warranty);
-  setT('th-actions', L.th_actions);
-  // Modal labels
-  setT('modal-lbl-type', L.lbl_type);
-  setT('modal-lbl-status', L.lbl_status);
-  setT('modal-lbl-name', L.lbl_name);
-  setT('modal-lbl-brand', L.lbl_brand);
-  setT('modal-lbl-serial', L.lbl_serial);
-  setT('modal-lbl-user', L.lbl_user);
-  setT('modal-lbl-dept', L.lbl_dept);
-  setT('modal-lbl-received', L.lbl_received);
-  setT('modal-lbl-warranty', L.lbl_warranty);
-  setT('modal-lbl-notes', L.lbl_notes);
-  setT('modal-section-basic', L.section_basic);
-  setT('modal-section-assign', L.section_assignment);
-  setT('modal-section-notes', L.section_notes);
-  setT('modal-btn-cancel', L.btn_cancel);
-  setT('modal-btn-save', L.btn_save);
-  // User modal
-  setT('u-modal-title', L.modal_add_admin);
-  setT('u-lbl-username', L.lbl_username);
-  setT('u-lbl-fullname', L.lbl_fullname);
-  setT('u-lbl-password', L.lbl_password);
-  setT('u-lbl-email', L.lbl_email);
-  // Profile
-  setT('p-section-account', L.section_account);
-  setT('p-lbl-fullname', L.lbl_fullname);
-  setT('p-lbl-username', L.lbl_username);
-  setT('p-lbl-email', L.lbl_email_short);
-  setT('p-section-pass', L.section_change_pass);
-  setT('p-lbl-old', L.lbl_current_pass);
-  setT('p-lbl-new', L.lbl_new_pass);
-  setT('p-lbl-confirm', L.lbl_confirm_pass);
-  setT('p-btn-save', L.btn_save_changes);
-  // Add admin button
-  setT('btn-add-admin', L.btn_add_admin);
-  // Reports buttons
-  setT('btn-warranty-report', L.btn_warranty_report);
-  setT('btn-send-report', L.btn_send_report);
-  setT('btn-backup-btn', L.btn_backup);
+  const dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  
+  // Update document direction
+  document.documentElement.dir = dir;
+  document.documentElement.lang = currentLang;
+  document.body.style.direction = dir;
+  
+  // Update all elements with data-i18n attribute
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if(L[key]) el.textContent = L[key];
+  });
+  
+  // Update placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if(L[key]) el.placeholder = L[key];
+  });
+  
+  // Update selects
+  document.querySelectorAll('[data-i18n-opts]').forEach(sel => {
+    const keys = sel.getAttribute('data-i18n-opts').split(',');
+    const opts = sel.querySelectorAll('option');
+    opts.forEach((opt,i) => { if(keys[i] && L[keys[i]]) opt.textContent = L[keys[i]]; });
+  });
+  
+  // Re-render dynamic content
+  renderTable();
+  renderReports();
+  renderWarrantyAlerts();
+  renderWarrantyPanel();
+  if(document.getElementById('panel-log').classList.contains('active')) loadLogs();
+  if(document.getElementById('panel-users').classList.contains('active')) loadUsers();
 }
+
 
 function setT(id, text){
   const el = document.getElementById(id);
