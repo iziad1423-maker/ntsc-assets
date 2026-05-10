@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NTSC — IT Asset Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+window.EMAILJS_PUBLIC_KEY = 'QIa4qHaHsbai1_iqm'; // ← استبدل هذا بالـ Public Key من EmailJS
+window.addEventListener('load', function(){
+  try{
+    if(typeof emailjs !== 'undefined'){
+      if(window.EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
+        console.warn('⚠️ EmailJS: Public Key not configured - emails will not be sent');
+      } else {
+        emailjs.init(window.EMAILJS_PUBLIC_KEY);
+        console.log('✅ EmailJS initialized successfully');
+      }
+    }
+  }catch(e){ console.warn('EmailJS init failed:', e.message); }
+});
+</script>
+<style>
+:root {
+  --g1: #081e13;
+  --g2: #0a2619;
+  --g3: #0d3322;
+  --g4: #103d28;
+  --accent: #2ecc71;
+  --accent2: #1a6b5a;
+  --accent3: #52d98c;
+  --gold: #f0c040;
+  --white: #ffffff;
+  --white80: rgba(255,255,255,0.8);
+  --white60: rgba(255,255,255,0.6);
+  --white30: rgba(255,255,255,0.3);
+  --white10: rgba(255,255,255,0.1);
+  --white05: rgba(255,255,255,0.05);
+  --glass: rgba(255,255,255,0.07);
+  --glass2: rgba(255,255,255,0.12);
+  --border: rgba(255,255,255,0.12);
+  --border2: rgba(46,204,113,0.25);
+  --danger: #e74c3c;
+  --warn: #f39c12;
+  --info: #3498db;
+  --font: 'Cairo', sans-serif;
+  --r: 14px;
+  --r2: 10px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.3);
+  --shadow2: 0 2px 12px rgba(0,0,0,0.2);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);background:var(--g1);color:var(--white);direction:rtl;overflow-x:hidden}
+
+/* ── BACKGROUND ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%,rgba(46,204,113,0.12) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 90% 100%,rgba(20,94,51,0.3) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 50%,rgba(15,77,42,0.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--g1),var(--g2));
+}
+.login-card{
+  background:var(--glass);
+  backdrop-filter:blur(40px);
+  border:1px solid var(--border2);
+  border-radius:24px;
+  padding:48px 44px;
+  width:420px;
+  max-width:95vw;
+  box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,0.1);
+  animation:fadeUp 0.5s ease;
+}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .logo-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:72px;height:72px;background:linear-gradient(135deg,var(--accent2),var(--g4));
+  border-radius:20px;font-size:32px;margin-bottom:14px;
+  box-shadow:0 8px 24px rgba(46,204,113,0.3);
+}
+.login-logo h1{font-size:20px;font-weight:800;color:var(--white)}
+.login-logo p{font-size:12px;color:var(--white60);margin-top:4px}
+.login-field{margin-bottom:16px}
+.login-field label{display:block;font-size:12px;font-weight:600;color:var(--white60);margin-bottom:8px;letter-spacing:0.5px}
+.login-field input{
+  width:100%;padding:13px 16px;
+  background:var(--white05);border:1px solid var(--border);
+  border-radius:var(--r2);color:var(--white);font-family:var(--font);font-size:14px;
+  transition:all 0.2s;
+}
+.login-field input:focus{outline:none;border-color:var(--accent);background:var(--white10);box-shadow:0 0 0 3px rgba(46,204,113,0.1)}
+.btn-login{
+  width:100%;padding:14px;margin-top:8px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:var(--white);border:none;border-radius:var(--r2);
+  font-family:var(--font);font-size:15px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  box-shadow:0 4px 20px rgba(46,204,113,0.3);
+}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(46,204,113,0.4)}
+.login-err{color:var(--danger);font-size:12px;text-align:center;margin-top:10px;min-height:18px}
+
+/* ── SETUP ── */
+#setup-screen{
+  position:fixed;inset:0;z-index:999;
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+  background:linear-gradient(135deg,var(--g1),var(--g2));padding:20px;
+}
+.setup-card{
+  background:var(--glass);backdrop-filter:blur(40px);
+  border:1px solid var(--border2);border-radius:24px;
+  padding:40px;width:500px;max-width:95vw;
+  box-shadow:var(--shadow);
+}
+.setup-card h2{font-size:18px;font-weight:800;color:var(--accent);margin-bottom:6px}
+.setup-card p{font-size:12px;color:var(--white60);margin-bottom:24px;line-height:1.8}
+.setup-field{margin-bottom:14px}
+.setup-field label{display:block;font-size:11px;font-weight:700;color:var(--white60);margin-bottom:7px;letter-spacing:0.5px;text-transform:uppercase}
+.setup-field input{
+  width:100%;padding:11px 14px;
+  background:var(--white05);border:1px solid var(--border);
+  border-radius:var(--r2);color:var(--white);font-family:monospace;font-size:12px;
+  transition:border 0.2s;
+}
+.setup-field input:focus{outline:none;border-color:var(--accent)}
+.btn-setup{
+  width:100%;padding:13px;margin-top:8px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:var(--white);border:none;border-radius:var(--r2);
+  font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;
+}
+
+/* ── APP LAYOUT ── */
+#app{display:none;position:relative;z-index:1;min-height:100vh}
+.sidebar{
+  position:fixed;top:0;right:0;height:100vh;width:240px;
+  background:rgba(10,46,26,0.7);backdrop-filter:blur(30px);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:100;
+  box-shadow:var(--shadow);
+}
+.sidebar-header{
+  padding:24px 20px 20px;border-bottom:1px solid var(--border);
+}
+.sb-logo{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.sb-logo-icon{
+  width:42px;height:42px;
+  background:linear-gradient(135deg,var(--accent2),var(--g4));
+  border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;box-shadow:0 4px 12px rgba(46,204,113,0.3);
+}
+.sb-logo-text h2{font-size:13px;font-weight:800;color:var(--white);line-height:1.2}
+.sb-logo-text p{font-size:10px;color:var(--white60);margin-top:2px}
+.sb-user{
+  margin-top:12px;padding:10px 12px;
+  background:var(--white05);border-radius:var(--r2);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-user-av{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent2),var(--g3));
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
+}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-info .name{font-size:12px;font-weight:700;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-info .role{font-size:10px;color:var(--accent3)}
+
+.sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:11px 13px;
+  border-radius:var(--r2);cursor:pointer;font-size:13px;color:var(--white60);
+  transition:all 0.15s;border:none;background:transparent;
+  font-family:var(--font);width:100%;text-align:right;font-weight:500;
+}
+.nav-item:hover{background:var(--white10);color:var(--white)}
+.nav-item.active{background:rgba(46,204,113,0.15);color:var(--accent3);font-weight:700;border:1px solid var(--border2)}
+.nav-item .ni{font-size:16px;flex-shrink:0}
+.nav-sep{height:1px;background:var(--border);margin:8px 0}
+.sidebar-footer{padding:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+.btn-add-main{
+  width:100%;padding:12px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:var(--white);border:none;border-radius:var(--r2);
+  font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 14px rgba(46,204,113,0.25);transition:all 0.15s;
+}
+.btn-add-main:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(46,204,113,0.35)}
+
+.main{margin-right:240px;padding:28px;min-height:100vh}
+.page-header{margin-bottom:24px}
+.page-header h1{font-size:22px;font-weight:800;color:var(--white)}
+.page-header p{font-size:13px;color:var(--white60);margin-top:3px}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:26px}
+.stat-card{
+  background:var(--glass);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 20px;position:relative;overflow:hidden;
+  transition:transform 0.2s;
+}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.stat-card.s1::before{background:var(--accent)}
+.stat-card.s2::before{background:#3498db}
+.stat-card.s3::before{background:var(--gold)}
+.stat-card.s4::before{background:var(--danger)}
+.stat-card.s5::before{background:#9b59b6}
+.stat-num{font-size:30px;font-weight:900;line-height:1;margin-bottom:4px}
+.stat-card.s1 .stat-num{color:var(--accent)}
+.stat-card.s2 .stat-num{color:#5dade2}
+.stat-card.s3 .stat-num{color:var(--gold)}
+.stat-card.s4 .stat-num{color:#ec7063}
+.stat-card.s5 .stat-num{color:#bb8fce}
+.stat-lbl{font-size:11px;color:var(--white60);font-weight:500}
+.stat-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:28px;opacity:0.12}
+
+/* ── WARRANTY ALERTS ── */
+.warranty-alerts{margin-bottom:20px}
+.alert-banner{
+  background:rgba(243,156,18,0.12);border:1px solid rgba(243,156,18,0.25);
+  border-radius:var(--r2);padding:12px 16px;margin-bottom:8px;
+  display:flex;align-items:center;gap:12px;font-size:13px;
+  backdrop-filter:blur(10px);
+}
+.alert-banner.expired{background:rgba(231,76,60,0.12);border-color:rgba(231,76,60,0.25)}
+.alert-banner .ab-icon{font-size:18px;flex-shrink:0}
+.alert-banner .ab-text strong{color:var(--gold);display:block;font-size:12px}
+.alert-banner.expired .ab-text strong{color:#ec7063}
+
+/* ── GLASS CARD ── */
+.glass-card{
+  background:var(--glass);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;
+}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:10px;padding:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.search-inp{
+  flex:1;min-width:180px;padding:10px 14px;
+  background:var(--white05);border:1px solid var(--border);
+  border-radius:var(--r2);color:var(--white);font-family:var(--font);font-size:13px;
+  transition:all 0.2s;
+}
+.search-inp::placeholder{color:var(--white30)}
+.search-inp:focus{outline:none;border-color:var(--accent);background:var(--white10)}
+.sel{
+  padding:10px 12px;background:var(--white05);border:1px solid var(--border);
+  border-radius:var(--r2);color:var(--white);font-family:var(--font);font-size:13px;cursor:pointer;
+}
+.sel option{background:var(--g2)}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 16px;border-radius:var(--r2);border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap}
+.btn-green{background:linear-gradient(135deg,var(--accent2),var(--accent));color:var(--white);box-shadow:0 2px 10px rgba(46,204,113,0.2)}
+.btn-green:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(46,204,113,0.3)}
+.btn-ghost{background:var(--white05);color:var(--white60);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--white10);color:var(--white)}
+.btn-sm{padding:6px 11px;font-size:11px;border-radius:8px}
+.btn-icon{background:var(--white05);border:1px solid var(--border);color:var(--white60)}
+.btn-icon:hover{background:var(--white10);color:var(--white)}
+.btn-edit{background:rgba(52,152,219,0.15);color:#5dade2;border:1px solid rgba(52,152,219,0.2)}
+.btn-edit:hover{background:rgba(52,152,219,0.25)}
+.btn-del{background:rgba(231,76,60,0.15);color:#ec7063;border:1px solid rgba(231,76,60,0.2)}
+.btn-del:hover{background:rgba(231,76,60,0.25)}
+.btn-pdf{background:rgba(155,89,182,0.15);color:#bb8fce;border:1px solid rgba(155,89,182,0.2)}
+.btn-pdf:hover{background:rgba(155,89,182,0.25)}
+.btn-qr{background:rgba(46,204,113,0.12);color:var(--accent3);border:1px solid var(--border2)}
+.btn-qr:hover{background:rgba(46,204,113,0.2)}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:rgba(0,0,0,0.2)}
+th{padding:12px 14px;text-align:right;font-weight:700;color:var(--white60);font-size:11px;letter-spacing:0.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.025)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.bg{background:rgba(46,204,113,0.15);color:var(--accent3);border:1px solid rgba(46,204,113,0.2)}
+.bb{background:rgba(52,152,219,0.15);color:#5dade2;border:1px solid rgba(52,152,219,0.2)}
+.bw{background:rgba(243,156,18,0.15);color:#f5b942;border:1px solid rgba(243,156,18,0.2)}
+.br{background:rgba(231,76,60,0.15);color:#ec7063;border:1px solid rgba(231,76,60,0.2)}
+.bgr{background:rgba(255,255,255,0.07);color:var(--white60);border:1px solid var(--border)}
+.warranty-ok{color:var(--accent3);font-size:11px}
+.warranty-soon{color:var(--gold);font-size:11px;font-weight:700}
+.warranty-exp{color:#ec7063;font-size:11px;font-weight:700}
+.empty-state{text-align:center;padding:60px 20px;color:var(--white30)}
+.empty-state .ei{font-size:48px;margin-bottom:12px;opacity:0.4}
+
+/* ── PANELS ── */
+.panel{display:none}.panel.active{display:block}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.overlay.open{display:flex}
+.modal{
+  background:rgba(10,46,26,0.92);backdrop-filter:blur(40px);
+  border:1px solid var(--border2);border-radius:20px;
+  padding:30px;width:580px;max-width:96vw;max-height:92vh;overflow-y:auto;
+  box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,0.08);
+  animation:fadeUp 0.2s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal h2{font-size:18px;font-weight:800;margin-bottom:22px;color:var(--white)}
+.modal-section{margin-bottom:20px}
+.modal-section-title{font-size:11px;font-weight:700;color:var(--accent3);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg{display:flex;flex-direction:column;gap:7px}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:11px;font-weight:700;color:var(--white60);letter-spacing:0.3px}
+.fg input,.fg select,.fg textarea{
+  padding:10px 12px;background:var(--white05);
+  border:1px solid var(--border);border-radius:var(--r2);
+  color:var(--white);font-family:var(--font);font-size:13px;transition:all 0.2s;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--accent);background:var(--white10)}
+.fg select option{background:var(--g2)}
+.fg textarea{resize:vertical;min-height:65px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+
+/* ── REPORTS ── */
+.rpt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.rpt-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.rpt-card h3{font-size:12px;font-weight:700;color:var(--white60);margin-bottom:16px;letter-spacing:0.5px;text-transform:uppercase}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12px}
+.bar-lbl{min-width:75px;color:var(--white80)}
+.bar-track{flex:1;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.6s ease}
+.bar-val{min-width:22px;text-align:left;color:var(--white60);font-weight:700}
+
+/* ── USERS PANEL ── */
+.user-card{
+  background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;gap:16px;
+  margin-bottom:10px;transition:all 0.2s;
+}
+.user-card:hover{border-color:var(--border2);transform:translateX(-2px)}
+.user-av{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent2),var(--g3));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.user-info{flex:1}
+.user-info .uname{font-size:14px;font-weight:700;color:var(--white)}
+.user-info .urole{font-size:11px;color:var(--accent3);margin-top:2px}
+.user-info .ulast{font-size:11px;color:var(--white30);margin-top:1px}
+
+/* ── LOG ── */
+.log-item{padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:12px}
+.log-item:last-child{border-bottom:none}
+.log-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center}
+.log-body{flex:1}
+.log-det{font-size:13px;color:var(--white80)}
+.log-meta{font-size:11px;color:var(--white30);margin-top:3px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(10,46,26,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);color:var(--white);padding:12px 24px;border-radius:12px;font-size:13px;font-weight:500;z-index:9999;display:none;box-shadow:var(--shadow)}
+.toast.show{display:block;animation:fadeUp 0.3s ease}
+
+/* ── QR MODAL ── */
+.qr-modal{max-width:340px;text-align:center}
+#qr-container{margin:20px auto;display:inline-block;padding:16px;background:white;border-radius:12px}
+.qr-asset-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.qr-asset-id{font-size:12px;color:var(--white60)}
+
+/* ── PDF STYLES (print) ── */
+@media print{
+  body>*{display:none !important}
+  #print-area{display:block !important}
+}
+#print-area{display:none}
+
+/* ── LOADING ── */
+.loader{position:fixed;inset:0;background:var(--g1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9000}
+.loader-spin{width:40px;height:40px;border:3px solid rgba(46,204,113,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader p{font-size:13px;color:var(--white60)}
+
+
+/* ── LANGUAGE SWITCHER ── */
+.lang-switcher{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px}
+.lang-btn{padding:6px 14px;border:none;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;transition:all 0.15s;background:transparent;color:var(--w70)}
+.lang-btn.active{background:var(--ntsc);color:#fff}
+.lang-btn:hover:not(.active){background:var(--w08);color:var(--white)}
+
+@media(max-width:900px){
+  .sidebar{width:200px}.main{margin-right:200px;padding:16px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .rpt-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+  <div class="loader-spin"></div>
+  <p>Loading...</p>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="72" height="82" viewBox="0 0 100 115" fill="none" style="margin:0 auto 14px;display:block;filter:drop-shadow(0 6px 20px rgba(46,204,113,0.25))">
+        <path d="M50 4L8 20V58C8 80 26 100 50 111C74 100 92 80 92 58V20L50 4Z" fill="#1a6b5a"/>
+        <path d="M50 12L14 26V58C14 77 30 95 50 105C70 95 86 77 86 58V26L50 12Z" fill="#145548"/>
+        <line x1="50" y1="80" x2="50" y2="45" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M50 52C44 44 36 42 32 44C36 50 44 52 50 52Z" fill="white"/>
+        <path d="M50 52C56 44 64 42 68 44C64 50 56 52 50 52Z" fill="white"/>
+        <path d="M50 48C46 40 46 32 50 28C54 32 54 40 50 48Z" fill="white"/>
+        <path d="M35 82L50 55L65 82" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>
+      <h1>National Transport Safety Center</h1>
+      <p style="font-size:12px;color:rgba(46,204,113,0.8);margin-top:6px">IT Asset Management System</p>
+    </div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="l-user" placeholder="Enter username" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">الدخول للنظام</button>
+    <div class="login-err" id="login-err"></div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-ghost btn-sm" onclick="showSetup()">⚙️ Connection Setup</button>
+        <button class="btn btn-ghost btn-sm" onclick="showResetModal()">🔑 نسيت Password؟</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div style="font-size:28px;margin-bottom:12px">⚙️</div>
+    <h2>Database Connection Setup</h2>
+    <p>أدخل بيانات Supabase مرة واحدة وتُحفظ تلقائياً.</p>
+    <div class="setup-field">
+      <label>Supabase URL</label>
+      <input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" dir="ltr">
+    </div>
+    <div class="setup-field">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="sb-key" placeholder="eyJhbGci..." dir="ltr">
+    </div>
+    <button class="btn-setup" onclick="saveConfig()">✅ Save & Continue</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sb-logo">
+        <svg width="36" height="42" viewBox="0 0 100 115" fill="none" style="flex-shrink:0">
+          <path d="M50 4L8 20V58C8 80 26 100 50 111C74 100 92 80 92 58V20L50 4Z" fill="#1a6b5a"/>
+          <path d="M50 12L14 26V58C14 77 30 95 50 105C70 95 86 77 86 58V26L50 12Z" fill="#145548"/>
+          <rect x="48" y="48" width="4" height="30" rx="2" fill="white"/>
+          <path d="M50 50C46 44 38 42 33 44C37 50 45 52 50 50Z" fill="white"/>
+          <path d="M50 50C54 44 62 42 67 44C63 50 55 52 50 50Z" fill="white"/>
+          <path d="M50 48C47 41 47 33 50 29C53 33 53 41 50 48Z" fill="white"/>
+          <path d="M37 80L50 56L63 80" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <div class="sb-logo-text">
+          <h2 id="sb-org">NTSC</h2>
+          <p id="sb-sub">IT Asset Management</p>
+        </div>
+      </div>
+      <div class="sb-user">
+        <div class="sb-user-av">👤</div>
+        <div class="sb-user-info">
+          <div class="name" id="sb-username">—</div>
+          <div class="role" id="sb-userrole" style="font-size:10px;color:var(--accent);margin-top:1px">Admin</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div style="display:flex;margin-bottom:10px;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <button id="btn-en" onclick="setLang('en')" style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;background:var(--ntsc);color:#fff;transition:all 0.2s">🌐 EN</button>
+        <button id="btn-ar" onclick="setLang('ar')" style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;background:transparent;color:rgba(255,255,255,0.5);transition:all 0.2s">عربي</button>
+      </div>
+      <button class="nav-item active" onclick="showPanel('assets',this)"><span class="ni">📋</span> Assets</button>
+      <button class="nav-item" onclick="showPanel('import',this)"><span class="ni">🤖</span> Smart Excel Import</button>
+      <button class="nav-item" onclick="showPanel('warranty',this)"><span class="ni">🛡️</span> Warranties</button>
+      <button class="nav-item" onclick="showPanel('reports',this)"><span class="ni">📊</span> Reports</button>
+      <div class="nav-sep"></div>
+      <button class="nav-item" onclick="showPanel('users',this)"><span class="ni">👥</span> Users</button>
+      <button class="nav-item" onclick="showPanel('log',this)"><span class="ni">📜</span> Activity Log</button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-add-main" onclick="openModal()">+ Add New Asset</button>
+      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="doLogout()">🚪 Sign Out</button>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <!-- WARRANTY ALERTS (shown on all panels) -->
+    <div id="warranty-alerts" class="warranty-alerts"></div>
+
+    <!-- ASSETS PANEL -->
+    <div class="panel active" id="panel-assets">
+      <div class="page-header">
+        <h1>📋 Assets</h1>
+        <p>Manage and track all IT assets</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card s1"><div class="stat-num" id="s0">0</div><div class="stat-lbl">Total Assets</div><div class="stat-icon">📦</div></div>
+        <div class="stat-card s2"><div class="stat-num" id="s1">0</div><div class="stat-lbl">Assigned</div><div class="stat-icon">👤</div></div>
+        <div class="stat-card s3"><div class="stat-num" id="s2">0</div><div class="stat-lbl">Available</div><div class="stat-icon">✅</div></div>
+        <div class="stat-card s4"><div class="stat-num" id="s3">0</div><div class="stat-lbl">Maintenance</div><div class="stat-icon">🔧</div></div>
+        <div class="stat-card s5"><div class="stat-num" id="s4">0</div><div class="stat-lbl">ضمان قارب الانتهاء</div><div class="stat-icon">⚠️</div></div>
+      </div>
+      <div class="glass-card">
+        <div class="toolbar">
+          <input class="search-inp" type="text" id="q" placeholder="🔍 ابحث بالاسم أو Serial Number أو الموظف..." oninput="renderTable()">
+          <select class="sel" id="ft" onchange="renderTable()">
+            <option value="">All Types</option>
+            <option>Laptop</option><option>Monitor</option><option>Phone</option>
+            <option>Printer</option><option>Router</option><option>Tablet</option><option>Other</option>
+          </select>
+          <select class="sel" id="fs" onchange="renderTable()">
+            <option value="">All Statuses</option>
+            <option>Assigned</option><option>Available</option><option>Maintenance</option><option>Out of Service</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadAssets()">🔄</button>
+          <button class="btn btn-ghost btn-sm" id="btn-export-csv" onclick="exportCSV()">⬇ Export CSV</button>
+          <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);color:#ec7063;border:1px solid rgba(231,76,60,0.2)" id="btn-del-all" onclick="deleteAllAssets()">🗑️ Delete All</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th id="th-asset-id">Asset ID</th><th id="th-type">Type</th><th id="th-name">Name / Model</th>
+              <th id="th-serial">Serial Number</th><th>الAssigned إليه</th><th>Department</th>
+              <th id="th-status">Status</th><th id="th-warranty">Warranty</th><th id="th-actions">Actions</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- WARRANTY PANEL -->
+    <div class="panel" id="panel-warranty">
+      <div class="page-header">
+        <h1>🛡️ إدارة Warranties</h1>
+        <p>Track asset warranty expiration dates</p>
+      </div>
+      <div class="glass-card">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th id="th-asset-id">Asset ID</th><th>الاسم</th><th id="th-type">Type</th><th>الAssigned إليه</th>
+              <th>Received Date</th><th>انتهاء Warranty</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="warranty-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS PANEL -->
+    <div class="panel" id="panel-reports">
+      <div class="page-header"><h1 id="ph-reports-title">📊 Reports</h1></div>
+      <div class="rpt-grid" id="rpt-grid"></div>
+      <div class="glass-card">
+        <table>
+          <thead><tr><th>Department</th><th>Total</th><th>Assigned</th><th>Available</th><th>Maintenance</th></tr></thead>
+          <tbody id="dept-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS PANEL -->
+    <div class="panel" id="panel-users">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><h1 id="ph-users-title">👥 Users</h1><p id="ph-users-sub">Manage admin accounts</p></div>
+        <button class="btn btn-green" onclick="openUserModal()">+ Add Admin</button>
+      </div>
+      <div id="users-list"></div>
+    </div>
+
+    <!-- LOG PANEL -->
+    <div class="panel" id="panel-log">
+      <div class="page-header"><h1 id="ph-log-title">📜 Activity Log</h1></div>
+      <div class="glass-card" id="log-list"></div>
+    </div>
+
+
+    <!-- AI IMPORT PANEL -->
+    <div class="panel" id="panel-import">
+      <div class="page-header">
+        <h1>🤖 AI-Powered Excel Import</h1>
+        <p>ارفع ملف Excel أو CSV وسيتم تحليله تلقائياً وAdded جميع الأصول للنظام</p>
+      </div>
+      <div class="glass-card" style="padding:24px;margin-bottom:16px">
+        <div id="import-drop" onclick="document.getElementById('file-inp').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+          ondragleave="this.style.borderColor=''"
+          ondrop="handleDrop(event)"
+          style="border:2px dashed rgba(46,204,113,0.3);border-radius:12px;padding:48px 20px;
+          text-align:center;cursor:pointer;background:rgba(46,204,113,0.04);transition:all 0.2s">
+          <div style="font-size:48px;margin-bottom:14px">📊</div>
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">Drag & drop Excel file here or click to browse</h3>
+          <p style="font-size:13px;color:var(--text2);line-height:1.7">Supports .xlsx, .xls, and .csv<br>
+          AI understands any format and classifies assets automatically</p>
+          <input type="file" id="file-inp" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(event)">
+        </div>
+        <div id="import-progress" style="display:none;padding:16px 0">
+          <div id="step1" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;font-size:13px">
+            <span id="s1i">📂</span><span>Reading file...</span></div>
+          <div id="step2" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;font-size:13px">
+            <span id="s2i">🤖</span><span>Analyzing with AI...</span></div>
+          <div id="step3" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:13px">
+            <span id="s3i">👁️</span><span>Previewing results...</span></div>
+        </div>
+        <div id="import-preview" style="display:none">
+          <div id="import-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;margin-bottom:10px">
+            <h3 style="font-size:14px;font-weight:700">Data Preview</h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="resetImport()">↩ Cancel</button>
+              <button class="btn btn-primary" id="confirm-btn" onclick="confirmImport()">✅ Import All</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;max-height:320px;overflow-y:auto">
+            <table><thead><tr>
+              <th id="th-type">Type</th><th>الاسم</th><th>Brand</th><th id="th-serial">Serial Number</th>
+              <th>المستخدم</th><th>Department</th><th>Status</th><th>Warranty</th>
+            </tr></thead><tbody id="preview-tbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:20px">
+        <h3 style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:14px">كيف يعمل؟</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
+            <div style="font-size:24px;margin-bottom:8px">📂</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px">Upload Any File</div>
+            <div style="font-size:11px;color:var(--text2)">Any Excel format — any column names</div>
+          </div>
+          <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
+            <div style="font-size:24px;margin-bottom:8px">🤖</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px">AI Analyzes</div>
+            <div style="font-size:11px;color:var(--text2)">Understands columns and classifies each asset automatically</div>
+          </div>
+          <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
+            <div style="font-size:24px;margin-bottom:8px">✅</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px">Review & Import</div>
+            <div style="font-size:11px;color:var(--text2)">شوف المعاينة واضغط Imported — يضاف كل شيء فوراً</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PANEL -->
+    <div class="panel" id="panel-profile">
+      <div class="page-header"><h1>⚙️ Account Settings</h1><p>Update login information</p></div>
+      <div class="glass-card" style="max-width:460px;padding:28px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">Account Information</div>
+        <div class="fg" style="margin-bottom:13px"><label>Full Name</label><input type="text" id="p-fullname" placeholder="Full Name"></div>
+        <div class="fg" style="margin-bottom:13px"><label>Username</label><input type="text" id="p-username" placeholder="username"></div>
+        <div class="fg" style="margin-bottom:13px"><label>Email</label><input type="email" id="p-email" placeholder="email@ntsc.gov.sa"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin:20px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--border)">تغيير Password</div>
+        <div class="fg" style="margin-bottom:13px"><label>Password الحالية</label><input type="password" id="p-old" placeholder="••••••••"></div>
+        <div class="fg" style="margin-bottom:13px"><label>Password الجديدة (6 أحرف على الأقل)</label><input type="password" id="p-new" placeholder="••••••••"></div>
+        <div class="fg" style="margin-bottom:20px"><label>تأكيد Password الجديدة</label><input type="password" id="p-confirm" placeholder="••••••••"></div>
+        <button class="btn btn-primary" onclick="saveProfile()" style="width:100%">💾 Save التغييرات</button>
+        <div id="profile-msg" style="margin-top:12px;font-size:13px;text-align:center;min-height:18px"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- DELETE ALL MODAL -->
+<div class="ov" id="delete-all-ov" style="z-index:9999;position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)">
+  <div class="modal" style="max-width:440px;text-align:center">
+    <div style="font-size:48px;margin-bottom:12px">⚠️</div>
+    <h2 style="color:#ec7063;margin-bottom:10px">Delete All Assets</h2>
+    <p style="font-size:13px;color:var(--w70);margin-bottom:20px;line-height:1.8">
+      This will permanently delete <strong id="delete-count" style="color:#ec7063;font-size:16px">0</strong> assets..<br>
+      This action <strong>cannot be undone</strong>.
+    </p>
+    <div style="background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:10px;padding:16px;margin-bottom:20px">
+      <label style="font-size:12px;color:var(--w70);display:block;margin-bottom:8px">To confirm, type the word <strong style="color:#ec7063">DELETE</strong> في المربع:</label>
+      <input id="delete-confirm-inp" type="text" placeholder="اكتب: DELETE"
+        style="width:100%;padding:10px 14px;background:var(--w08);border:1px solid rgba(231,76,60,0.3);border-radius:8px;color:#fff;font-family:var(--font);font-size:14px;text-align:center"
+        oninput="document.getElementById('delete-confirm-btn').disabled=this.value!=='DELETE'">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-gh" onclick="const d=document.getElementById('delete-all-ov');d.style.display='none';d.classList.remove('open');document.getElementById('delete-confirm-inp').value='';document.getElementById('delete-confirm-btn').disabled=true">Cancel</button>
+      <button id="delete-confirm-btn" class="btn" disabled
+        style="background:#e74c3c;color:#fff;opacity:0.5;cursor:not-allowed"
+        onclick="executeDeleteAll()"
+        onmouseover="if(!this.disabled)this.style.opacity='0.85'"
+        onmouseout="if(!this.disabled)this.style.opacity='1'">🗑️ تأكيد الDELETE</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- SINGLE DELETE MODAL -->
+<div class="ov" id="single-delete-ov" style="z-index:9999;position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">🗑️</div>
+    <h2 style="margin-bottom:8px">DELETE الأصل</h2>
+    <p style="font-size:13px;color:var(--w70);margin-bottom:20px;line-height:1.8">
+      هل تريد DELETE:<br>
+      <strong id="single-delete-name" style="color:#fff;font-size:15px"></strong>
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-gh" onclick="const shide=document.getElementById('single-delete-ov');shide.style.display='none';shide.classList.remove('open')">Cancel</button>
+      <button class="btn btn-d" id="single-delete-btn" onclick="confirmSingleDelete()">🗑️ نعم، اDELETE</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT USER MODAL -->
+<div class="ov" id="edit-user-ov" style="z-index:9999;position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)">
+  <div class="modal" style="max-width:420px">
+    <h2>✏️ Edit بيانات المستخدم</h2>
+    <input type="hidden" id="eu-id">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="fg"><label>Username *</label><input id="eu-username" placeholder="username"></div>
+      <div class="fg"><label>Full Name</label><input id="eu-fullname" placeholder="Full Name"></div>
+      <div class="fg"><label>📧 Email</label><input id="eu-email" type="email" placeholder="name@ntsc.gov.sa"></div>
+      <div class="fg"><label>كلمة مرور جديدة (اتركها فارغة إذا ما تبي تغيرها)</label><input id="eu-pass" type="password" placeholder="••••••••"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-gh" onclick="closeEditUserModal()">Cancel</button>
+      <button class="btn btn-g" onclick="saveEditUser()">💾 Save الModifiedات</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGOUT MODAL -->
+<div id="logout-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px)">
+  <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(46,204,113,0.3);border-radius:20px;padding:36px 32px;width:360px;max-width:95vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+    <div style="font-size:48px;margin-bottom:14px">👋</div>
+    <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff">Sign Out</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px">Are you sure you want to sign out?</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="document.getElementById('logout-modal').style.display='none'"
+        style="padding:10px 24px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+        Cancel
+      </button>
+      <button onclick="confirmLogout()"
+        style="padding:10px 24px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a6b5a,#2ecc71);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        Yes, Sign Out
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE USER MODAL -->
+<div id="del-user-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px)">
+  <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(231,76,60,0.3);border-radius:20px;padding:36px 32px;width:380px;max-width:95vw;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
+    <input type="hidden" id="del-user-id">
+    <div style="font-size:48px;margin-bottom:14px">🗑️</div>
+    <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff">DELETE المستخدم</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:24px;line-height:1.8">
+      هل تريد DELETE المستخدم<br>
+      <strong id="del-user-name" style="color:#ec7063;font-size:15px"></strong> ؟
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="document.getElementById('del-user-modal').style.display='none'"
+        style="padding:11px 26px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+        Cancel
+      </button>
+      <button onclick="confirmDeleteUser()"
+        style="padding:11px 26px;border-radius:10px;border:none;background:#e74c3c;color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        🗑️ نعم، اDELETE
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div id="reset-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px)">
+  <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(46,204,113,0.3);border-radius:20px;padding:36px 32px;width:420px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:44px;margin-bottom:12px">🔑</div>
+      <h2 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">استعادة Password</h2>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7">Enter username والإيميل المرتبط بالحساب<br>A new password will be sent to you.</p>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px">Username</label>
+      <input id="reset-username" type="text" placeholder="username"
+        style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px">Email</label>
+      <input id="reset-email" type="email" placeholder="email@ntsc.gov.sa"
+        style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box">
+    </div>
+    <div id="reset-msg" style="min-height:18px;font-size:12px;text-align:center;margin-bottom:14px"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="closeResetModal()"
+        style="padding:11px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+        Cancel
+      </button>
+      <button onclick="doResetPassword()"
+        style="padding:11px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a6b5a,#2ecc71);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        📧 إرسال Password
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET PASSWORD FROM USERS PANEL MODAL -->
+<div id="reset-user-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px)">
+  <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(46,204,113,0.3);border-radius:20px;padding:36px 32px;width:400px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
+    <input type="hidden" id="rsu-id">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:40px;margin-bottom:10px">🔐</div>
+      <h2 style="font-size:17px;font-weight:800;color:#fff;margin-bottom:4px">تغيير Password</h2>
+      <p id="rsu-name" style="font-size:13px;color:rgba(46,204,113,0.9);margin:0"></p>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px">Password الجديدة</label>
+      <input id="rsu-pass" type="password" placeholder="••••••••"
+        style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px">تأكيد Password</label>
+      <input id="rsu-confirm" type="password" placeholder="••••••••"
+        style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="document.getElementById('reset-user-modal').style.display='none'"
+        style="padding:11px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+        Cancel
+      </button>
+      <button onclick="confirmResetUserPass()"
+        style="padding:11px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a6b5a,#2ecc71);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        💾 Save
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ASSET MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modal-title">Add New Asset</h2>
+    <div class="modal-section">
+      <div class="modal-section-title">Basic Information</div>
+      <div class="form-grid">
+        <div class="fg"><label>Type *</label>
+          <select id="f-type"><option>Laptop</option><option>Monitor</option><option>Phone</option><option>Printer</option><option>Router</option><option>Tablet</option><option>Other</option></select></div>
+        <div class="fg"><label>Status *</label>
+          <select id="f-status"><option value="Available">Available</option><option value="Assigned">Assigned</option><option value="صيانة">Maintenance</option><option value="مُعطَّل">Out of Service</option></select></div>
+        <div class="fg full"><label>Name / Model *</label><input id="f-name" placeholder="e.g. Dell Latitude 5540"></div>
+        <div class="fg"><label>Brand</label><input id="f-brand" placeholder="Dell / HP / Apple"></div>
+        <div class="fg"><label>Serial Number</label><input id="f-serial" placeholder="SN-XXXXXXXX"></div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">بيانات العهدة</div>
+      <div class="form-grid">
+        <div class="fg"><label>الAssigned إليه</label><input id="f-user" placeholder="Employee name"></div>
+        <div class="fg"><label>Department</label><input id="f-dept" placeholder="اسم Department"></div>
+        <div class="fg"><label>Received Date</label><input id="f-date" type="date"></div>
+        <div class="fg"><label>تاريخ انتهاء Warranty</label><input id="f-warranty" type="date"></div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Notes</div>
+      <div class="fg"><textarea id="f-notes" placeholder="Any additional details..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" id="save-btn" onclick="saveAsset()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div class="overlay" id="user-overlay">
+  <div class="modal" style="max-width:420px">
+    <h2 id="user-modal-title">Add New Admin</h2>
+    <div class="form-grid" style="grid-template-columns:1fr">
+      <div class="fg"><label>Username *</label><input id="u-username" placeholder="username"></div>
+      <div class="fg"><label>Full Name</label><input id="u-fullname" placeholder="Full Name"></div>
+      <div class="fg"><label>Password *</label><input id="u-pass" type="password" placeholder="••••••••"></div>
+      <div class="fg"><label>📧 Email (for notifications)</label><input id="u-email" type="email" placeholder="name@ntsc.gov.sa"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeUserModal()">Cancel</button>
+      <button class="btn btn-green" onclick="saveUser()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="overlay" id="qr-overlay">
+  <div class="modal qr-modal">
+    <h2>QR Code — العهدة</h2>
+    <div class="qr-asset-name" id="qr-asset-name"></div>
+    <div class="qr-asset-id" id="qr-asset-id"></div>
+    <div id="qr-container"></div>
+    <div class="modal-footer" style="justify-content:center">
+      <button class="btn btn-ghost" onclick="closeQR()">إغلاق</button>
+      <button class="btn btn-green" onclick="printQR()">🖨️ طباعة</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF PRINT AREA -->
+<div id="print-area"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── GLOBALS ────────────────────────────────────────────────────────────────
+const ICONS={'Laptop':'💻','Monitor':'🖥️','Phone':'📱','Printer':'🖨️','Router':'📡','Tablet':'📟','Other':'📦'};
+let DB=null, assets=[], currentUser=null, editId=null;
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+window.onload=()=>{
+  const url=localStorage.getItem('sb_url'), key=localStorage.getItem('sb_key');
+  if(!url||!key){ hide('loader'); show('setup-screen','flex'); return; }
+  try{
+    DB=window.supabase.createClient(url,key);
+    checkSession();
+  }catch(e){ hide('loader'); show('setup-screen','flex'); }
+};
+
+async function checkSession(){
+  const u=sessionStorage.getItem('current_user');
+  if(u){ currentUser=JSON.parse(u); startApp(); return; }
+  hide('loader'); show('login-screen','flex');
+}
+
+// ── CONFIG ─────────────────────────────────────────────────────────────────
+function saveConfig(){
+  const url=document.getElementById('sb-url').value.trim();
+  const key=document.getElementById('sb-key').value.trim();
+  if(!url||!key){alert('أدخل URL و Key');return;}
+  localStorage.setItem('sb_url',url);
+  localStorage.setItem('sb_key',key);
+  try{ DB=window.supabase.createClient(url,key); }catch(e){alert('Error: '+e.message);return;}
+  hide('setup-screen'); show('login-screen','flex');
+}
+function showSetup(){ hide('login-screen'); show('setup-screen','flex'); }
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+async function doLogin(){
+  const username=document.getElementById('l-user').value.trim();
+  const password=document.getElementById('l-pass').value;
+  const err=document.getElementById('login-err');
+  err.textContent='';
+  if(!username||!password){err.textContent='الرجاء إدخال Username وPassword';return;}
+  try{
+    const {data,error}=await DB.from('admins').select('*').eq('username',username).eq('password',password).single();
+    if(error||!data){
+      err.textContent = error?.code==='PGRST116' ? 'Username أو Password غير صحيحة' : (error?.message||'Username أو Password غير صحيحة');
+      return;
+    }
+    currentUser=data;
+    sessionStorage.setItem('current_user',JSON.stringify(data));
+    await DB.from('admins').update({last_login:new Date().toISOString()}).eq('id',data.id);
+    startApp();
+  }catch(e){err.textContent='خطأ في الاتصال: '+e.message;}
+}
+
+function doLogout(){
+  const m = document.getElementById('logout-modal');
+  m.style.display='flex'; m.classList.add('open');
+}
+function confirmLogout(){
+  sessionStorage.removeItem('current_user');
+  location.reload();
+}
+
+function startApp(){
+  hide('login-screen'); hide('loader');
+  document.getElementById('app').style.display='block';
+  document.getElementById('sb-username').textContent=currentUser.fullname||currentUser.username;
+  // Security & Stability hooks
+  keepAlive();
+  setTimeout(()=>checkAutoBackup(), 5000);
+  const roleEl=document.getElementById('sb-userrole');
+  if(roleEl) roleEl.textContent=currentUser.username?'@'+currentUser.username:'Admin';
+  loadAssets();
+}
+
+// ── DATA ───────────────────────────────────────────────────────────────────
+async function loadAssets(){
+  if(!DB){toast('❌ لم يتم الاتصال بقاعدة البيانات',false);return;}
+  try{
+    const {data,error}=await DB.from('assets').select('*').order('created_at',{ascending:false});
+    if(error)throw error;
+    assets=data||[];
+    renderStats(); renderTable(); renderReports(); renderWarrantyAlerts(); renderWarrantyPanel();
+  }catch(e){toast('❌ '+e.message,false);}
+}
+
+async function saveAsset(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){alert('أدخل اسم الأصل');return;}
+  const btn=document.getElementById('save-btn');
+  btn.textContent='⏳...'; btn.disabled=true;
+  const rec={
+    asset_type:document.getElementById('f-type').value,
+    status:document.getElementById('f-status').value,
+    name, brand:document.getElementById('f-brand').value.trim(),
+    serial:document.getElementById('f-serial').value.trim(),
+    assigned_to:document.getElementById('f-user').value.trim(),
+    department:document.getElementById('f-dept').value.trim(),
+    received_date:document.getElementById('f-date').value||null,
+    warranty_end:document.getElementById('f-warranty').value||null,
+    notes:document.getElementById('f-notes').value.trim(),
+  };
+  try{
+    let err;
+    if(editId){
+      ({error:err}=await DB.from('assets').update(rec).eq('id',editId));
+      await logAction('Modified',`تم Modified: ${name}`);
+    }else{
+      ({error:err}=await DB.from('assets').insert([rec]));
+      await logAction('Added',`تم Added: ${name} → ${rec.assigned_to||'غير محدد'}`);
+    }
+    if(err)throw err;
+    toast(editId?'✅ تم الModified':'✅ تم الAdded');
+    closeModal(); loadAssets();
+    if(!editId) sendEmailNotification('➕ تم Add New Asset',
+      `الأصل: ${rec.name} | Type: ${rec.asset_type} | Brand: ${rec.brand||'—'} | الAssigned إليه: ${rec.assigned_to||'—'} | Department: ${rec.department||'—'}`
+    );
+  }catch(e){toast('❌ '+e.message,false);}
+  btn.textContent='💾 Save'; btn.disabled=false;
+}
+
+let _deleteId=null,_deleteName=null;
+function deleteAsset(id,name){
+  _deleteId=id; _deleteName=name;
+  document.getElementById('single-delete-name').textContent=name;
+  const sov=document.getElementById('single-delete-ov');sov.style.display='flex';sov.classList.add('open');
+}
+async function confirmSingleDelete(){
+  const shide=document.getElementById('single-delete-ov');shide.style.display='none';shide.classList.remove('open');
+  const id=_deleteId, name=_deleteName;
+  if(!id) return;
+  const {error}=await DB.from('assets').delete().eq('id',id);
+  if(error){toast('❌ '+error.message,false);return;}
+  await logAction('DELETE',`تم DELETE: ${name}`);
+  toast('🗑️ تم الDELETE'); loadAssets();
+}
+
+async function logAction(op,details){
+  await DB.from('asset_logs').insert([{operation:op,details,done_by:currentUser?.username||'—'}]);
+}
+
+async function loadLogs(){
+  const {data}=await DB.from('asset_logs').select('*').order('created_at',{ascending:false}).limit(80);
+  const icons={Added:'➕',Modified:'✏️',DELETE:'🗑️'};
+  document.getElementById('log-list').innerHTML=data?.length
+    ?data.map(l=>`<div class="log-item">
+        <div class="log-icon">${icons[l.operation]||'📋'}</div>
+        <div class="log-body">
+          <div class="log-det">${l.details}</div>
+          <div class="log-meta">🕐 ${fmtDt(l.created_at)} &nbsp;·&nbsp; 👤 ${l.done_by||'—'}</div>
+        </div></div>`).join('')
+    :'<div class="empty-state"><div class="ei">📜</div><p>No activity yet</p></div>';
+}
+
+// ── USERS ──────────────────────────────────────────────────────────────────
+async function loadUsers(){
+  const {data}=await DB.from('admins').select('*').order('created_at',{ascending:true});
+  document.getElementById('users-list').innerHTML=data?.length
+    ?data.map(u=>`<div class="user-card">
+        <div class="user-av">👤</div>
+        <div class="user-info">
+          <div class="uname">${u.fullname||u.username}</div>
+          <div class="urole">@${u.username} — System Admin</div>
+          <div class="ulast">Last login: ${u.last_login?fmtDt(u.last_login):'Never logged in'}</div>
+          <div class="ulast" style="color:var(--accent3)">${u.email?'📧 '+u.email:'⚠️ No email — will not receive notifications'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+          <button class="btn btn-e btn-sm" onclick="openEditUserModal(${u.id},'${u.username}','${u.fullname||''}','${u.email||''}')">✏️ Edit</button>
+          <button class="btn btn-sm" style="background:rgba(243,156,18,0.15);color:#f5b942;border:1px solid rgba(243,156,18,0.2);padding:5px 10px;font-size:11px;border-radius:8px;cursor:pointer" onclick="openResetUserPass(${u.id},'${u.username}')">🔑 باسورد</button>
+          ${u.username!==currentUser.username?`<button class="btn btn-d btn-sm" onclick="deleteUser(${u.id},'${u.username}')">🗑️ Delete</button>`:'<span class="badge bg" style="font-size:10px;padding:3px 8px">You</span>'}
+        </div>
+      </div>`).join('')
+    :'<div class="empty-state"><div class="ei">👥</div><p>No users found</p></div>';
+}
+
+async function saveUser(){
+  const username=document.getElementById('u-username').value.trim();
+  const fullname=document.getElementById('u-fullname').value.trim();
+  const password=document.getElementById('u-pass').value;
+  if(!username||!password){alert('Enter username وPassword');return;}
+  const {error}=await DB.from('admins').insert([{username,fullname,password}]);
+  if(error){toast('❌ '+error.message,false);return;}
+  toast('✅ تم Added الأدمن');
+  closeUserModal(); loadUsers();
+}
+
+function deleteUser(id,username){
+  document.getElementById('del-user-name').textContent=username;
+  document.getElementById('del-user-id').value=id;
+  const m=document.getElementById('del-user-modal');
+  m.style.display='flex';
+}
+async function confirmDeleteUser(){
+  const id=document.getElementById('del-user-id').value;
+  document.getElementById('del-user-modal').style.display='none';
+  const{error}=await DB.from('admins').delete().eq('id',id);
+  if(error){toast('❌ '+error.message,false);return;}
+  toast('🗑️ تم DELETE المستخدم');loadUsers();
+}
+
+// ── WARRANTY ───────────────────────────────────────────────────────────────
+function warrantyStatus(dateStr){
+  if(!dateStr)return null;
+  const end=new Date(dateStr), now=new Date();
+  const days=Math.ceil((end-now)/(1000*60*60*24));
+  if(days<0)return{cls:'warranty-exp',text:'Expired ❌',days};
+  if(days<=90)return{cls:'warranty-soon',text:`Expires in ${days} days ⚠️`,days};
+  return{cls:'warranty-ok',text:`Remaining: ${days} days ✅`,days};
+}
+
+function renderWarrantyAlerts(){
+  const container=document.getElementById('warranty-alerts');
+  const expiring=assets.filter(a=>{
+    if(!a.warranty_end)return false;
+    const s=warrantyStatus(a.warranty_end);
+    return s&&s.days<=90;
+  });
+  if(!expiring.length){container.innerHTML='';return;}
+  const expired=expiring.filter(a=>warrantyStatus(a.warranty_end).days<0);
+  const soon=expiring.filter(a=>{const s=warrantyStatus(a.warranty_end);return s.days>=0&&s.days<=90;});
+  let html='';
+  if(expired.length) html+=`<div class="alert-banner expired"><span class="ab-icon">🚨</span><div class="ab-text"><strong>ضمانات منتهية (${expired.length})</strong>${expired.map(a=>a.name).join(' · ')}</div></div>`;
+  if(soon.length)    html+=`<div class="alert-banner"><span class="ab-icon">⚠️</span><div class="ab-text"><strong>ضمانات تنتهي قريباً (${soon.length})</strong>${soon.map(a=>a.name+' ('+warrantyStatus(a.warranty_end).text+')').join(' · ')}</div></div>`;
+  container.innerHTML=html;
+}
+
+function renderWarrantyPanel(){
+  const hasWarranty=assets.filter(a=>a.warranty_end).sort((a,b)=>new Date(a.warranty_end)-new Date(b.warranty_end));
+  const tbody=document.getElementById('warranty-tbody');
+  if(!hasWarranty.length){
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="ei">🛡️</div><p>No assets with warranty date</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=hasWarranty.map(a=>{
+    const ws=warrantyStatus(a.warranty_end);
+    return `<tr>
+      <td style="font-family:monospace;font-size:11px;color:var(--white60)">${a.asset_id||'—'}</td>
+      <td><strong>${a.name}</strong></td>
+      <td>${ICONS[a.asset_type]||'📦'} ${a.asset_type}</td>
+      <td>${a.assigned_to||'—'}</td>
+      <td style="font-size:11px">${fmtDate(a.received_date)}</td>
+      <td style="font-size:11px">${fmtDate(a.warranty_end)}</td>
+      <td><span class="${ws.cls}">${ws.text}</span></td>
+      <td><button class="btn btn-edit btn-sm" onclick="openModal('${a.id}')">✏️ Edit</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function renderStats(){
+  const warrantySoon=assets.filter(a=>{if(!a.warranty_end)return false;const s=warrantyStatus(a.warranty_end);return s&&s.days>=0&&s.days<=90;}).length;
+  document.getElementById('s0').textContent=assets.length;
+  document.getElementById('s1').textContent=assets.filter(a=>a.status==='Assigned').length;
+  document.getElementById('s2').textContent=assets.filter(a=>a.status==='Available').length;
+  document.getElementById('s3').textContent=assets.filter(a=>a.status==='صيانة'||a.status==='مُعطَّل').length;
+  document.getElementById('s4').textContent=warrantySoon;
+}
+
+function renderTable(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const ft=document.getElementById('ft').value;
+  const fs=document.getElementById('fs').value;
+  const f=assets.filter(a=>{
+    const mq=!q||(a.name+a.serial+a.assigned_to+a.department+(a.brand||'')).toLowerCase().includes(q);
+    return mq&&(!ft||a.asset_type===ft)&&(!fs||a.status===fs);
+  });
+  const bCls={Assigned:'bg',Available:'bb',صيانة:'bw',مُعطَّل:'br'};
+  const tbody=document.getElementById('tbody');
+  if(!f.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="ei">🔍</div><p>No results found</p></div></td></tr>`;return;}
+  tbody.innerHTML=f.map(a=>{
+    const ws=warrantyStatus(a.warranty_end);
+    const warrantyCell=ws?`<span class="${ws.cls}">${ws.text}</span>`:'<span style="color:var(--white30)">—</span>';
+    return`<tr>
+      <td style="font-family:monospace;font-size:11px;color:var(--white60)">${a.asset_id||'—'}</td>
+      <td>${ICONS[a.asset_type]||'📦'} ${a.asset_type}</td>
+      <td><strong>${a.name}</strong>${a.brand?`<br><span style="font-size:11px;color:var(--white30)">${a.brand}</span>`:''}</td>
+      <td style="font-family:monospace;font-size:11px">${a.serial||'—'}</td>
+      <td>${a.assigned_to||'<span style="color:var(--white30)">—</span>'}</td>
+      <td>${a.department||'—'}</td>
+      <td><span class="badge ${bCls[a.status]||'bgr'}">${a.status}</span></td>
+      <td>${warrantyCell}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-sm btn-edit" onclick="openModal('${a.id}')" title="Modified">✏️</button>
+        <button class="btn btn-sm btn-pdf" onclick="printPDF('${a.id}')" title="PDF">🖨️</button>
+        <button class="btn btn-sm btn-qr" onclick="showQR('${a.id}')" title="QR">📱</button>
+        <button class="btn btn-sm btn-del" onclick="deleteAsset('${a.id}','${a.name.replace(/'/g,"\\'")}')" title="DELETE">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderReports(){
+  const tc={},sc={};
+  assets.forEach(a=>{tc[a.asset_type]=(tc[a.asset_type]||0)+1;sc[a.status]=(sc[a.status]||0)+1;});
+  const tm=Math.max(...Object.values(tc),1),sm=Math.max(...Object.values(sc),1);
+  const clrs={'Laptop':'#2ecc71','Monitor':'#3498db','Phone':'#f39c12','Printer':'#e74c3c','Router':'#9b59b6','Tablet':'#1abc9c','Other':'#7f8c8d'};
+  const sc2={Assigned:'#2ecc71',Available:'#3498db',صيانة:'#f39c12',مُعطَّل:'#e74c3c'};
+  document.getElementById('rpt-grid').innerHTML=
+    `<div class="rpt-card"><h3>Asset Types</h3>
+    ${Object.entries(tc).map(([k,v])=>`<div class="bar-row"><span class="bar-lbl">${ICONS[k]||'📦'} ${k}</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/tm*100)}%;background:${clrs[k]||'#888'}"></div></div>
+    <span class="bar-val">${v}</span></div>`).join('')}</div>
+    <div class="rpt-card"><h3>Status</h3>
+    ${['Assigned','Available','صيانة','مُعطَّل'].map(s=>`<div class="bar-row"><span class="bar-lbl">${s}</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${Math.round((sc[s]||0)/sm*100)}%;background:${sc2[s]}"></div></div>
+    <span class="bar-val">${sc[s]||0}</span></div>`).join('')}</div>`;
+  const dm={};
+  assets.forEach(a=>{if(!a.department)return;if(!dm[a.department])dm[a.department]={t:0,a:0,u:0,m:0};
+    dm[a.department].t++;
+    if(a.status==='Assigned')dm[a.department].a++;
+    if(a.status==='Available')dm[a.department].u++;
+    if(a.status==='صيانة'||a.status==='مُعطَّل')dm[a.department].m++;});
+  const rows=Object.entries(dm);
+  document.getElementById('dept-tbody').innerHTML=rows.length
+    ?rows.map(([d,v])=>`<tr><td><strong>${d}</strong></td><td>${v.t}</td>
+      <td><span class="badge bg">${v.a}</span></td>
+      <td><span class="badge bb">${v.u}</span></td>
+      <td><span class="badge bw">${v.m}</span></td></tr>`).join('')
+    :`<tr><td colspan="5"><div class="empty-state" style="padding:30px"><p>لا توجد بيانات</p></div></td></tr>`;
+}
+
+// ── QR ─────────────────────────────────────────────────────────────────────
+function showQR(id){
+  const a=assets.find(x=>x.id==id);
+  document.getElementById('qr-asset-name').textContent=a.name;
+  document.getElementById('qr-asset-id').textContent=a.asset_id||id;
+  const container=document.getElementById('qr-container');
+  container.innerHTML='';
+  new QRCode(container,{
+    text: JSON.stringify({id:a.asset_id||id,name:a.name,serial:a.serial||'',user:a.assigned_to||''}),
+    width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',
+    correctLevel:QRCode.CorrectLevel.M
+  });
+  document.getElementById('qr-overlay').classList.add('open');
+}
+function closeQR(){document.getElementById('qr-overlay').classList.remove('open')}
+function printQR(){
+  const content=document.getElementById('qr-container').innerHTML;
+  const name=document.getElementById('qr-asset-name').textContent;
+  const id=document.getElementById('qr-asset-id').textContent;
+  const w=window.open('','_blank','width=400,height=500');
+  w.document.write(`<html dir="rtl"><head><title>QR - ${name}</title><style>
+    body{font-family:Cairo,sans-serif;text-align:center;padding:30px;background:#fff}
+    h2{font-size:18px;margin-bottom:4px}p{font-size:13px;color:#666;margin-bottom:20px}
+  </style></head><body><h2>${name}</h2><p>${id}</p>${content}<br>
+  <script>window.onload=()=>{window.print();window.close()}<\/script><\/body><\/html>`);
+}
+
+// ── PDF ────────────────────────────────────────────────────────────────────
+function printPDF(id){
+  const a=assets.find(x=>x.id==id);
+  const ws=warrantyStatus(a.warranty_end);
+  const w=window.open('','_blank','width=800,height:600');
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <title>وصل عهدة - ${a.name}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Cairo,sans-serif;background:#fff;color:#1a1a1a;padding:40px;direction:rtl}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #145e33;padding-bottom:20px;margin-bottom:28px}
+    .org h1{font-size:20px;font-weight:800;color:#145e33}
+    .org p{font-size:12px;color:#666;margin-top:4px}
+    .doc-title{text-align:center;margin-bottom:28px}
+    .doc-title h2{font-size:24px;font-weight:800;color:#145e33;border:2px solid #145e33;display:inline-block;padding:8px 32px;border-radius:8px}
+    .doc-title p{font-size:13px;color:#666;margin-top:8px}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+    .info-item{border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px}
+    .info-item .lbl{font-size:11px;color:#9ca3af;font-weight:600;letter-spacing:0.5px;margin-bottom:5px;text-transform:uppercase}
+    .info-item .val{font-size:15px;font-weight:700;color:#111}
+    .status-box{text-align:center;padding:20px;background:#f0fdf4;border:2px solid #145e33;border-radius:12px;margin-bottom:28px}
+    .status-box .s-label{font-size:12px;color:#666;margin-bottom:6px}
+    .status-box .s-val{font-size:22px;font-weight:800;color:#145e33}
+    .warranty-box{padding:16px;border-radius:8px;margin-bottom:28px;text-align:center}
+    .warranty-box.ok{background:#f0fdf4;border:1px solid #145e33}
+    .warranty-box.soon{background:#fffbeb;border:1px solid #f59e0b}
+    .warranty-box.exp{background:#fef2f2;border:1px solid #ef4444}
+    .notes-box{border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:28px;min-height:80px}
+    .notes-box .lbl{font-size:11px;color:#9ca3af;font-weight:600;margin-bottom:8px}
+    .sign-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:40px}
+    .sign-box{border-top:2px solid #145e33;padding-top:10px;text-align:center;font-size:12px;color:#666}
+    .footer{margin-top:40px;text-align:center;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:16px}
+    .badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:700}
+  </style></head><body>
+  <div class="header">
+    <div class="org"><h1>🛡️ National Transport Safety Center</h1><p>نظام إدارة العهد والأصول التقنية</p></div>
+    <div style="text-align:left;font-size:12px;color:#666">
+      <div>Asset ID: <strong style="color:#145e33">${a.asset_id||a.id}</strong></div>
+      <div>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')}</div>
+    </div>
+  </div>
+  <div class="doc-title">
+    <h2>وصل تسليم عهدة</h2>
+    <p>يُشهد بموجب هذا الوصل بتسليم الأصل التقني المبيّن أدناه</p>
+  </div>
+  <div class="info-grid">
+    <div class="info-item"><div class="lbl">Name / Model</div><div class="val">${a.name}</div></div>
+    <div class="info-item"><div class="lbl">Type</div><div class="val">${ICONS[a.asset_type]||''} ${a.asset_type}</div></div>
+    <div class="info-item"><div class="lbl">Brand</div><div class="val">${a.brand||'—'}</div></div>
+    <div class="info-item"><div class="lbl">Serial Number</div><div class="val" style="font-family:monospace">${a.serial||'—'}</div></div>
+    <div class="info-item"><div class="lbl">الAssigned إليه</div><div class="val">${a.assigned_to||'—'}</div></div>
+    <div class="info-item"><div class="lbl">Department</div><div class="val">${a.department||'—'}</div></div>
+    <div class="info-item"><div class="lbl">Received Date</div><div class="val">${fmtDate(a.received_date)}</div></div>
+    <div class="info-item"><div class="lbl">انتهاء Warranty</div><div class="val">${a.warranty_end?fmtDate(a.warranty_end):'—'}</div></div>
+  </div>
+  ${a.warranty_end?`<div class="warranty-box ${ws&&ws.days<0?'exp':ws&&ws.days<=90?'soon':'ok'}">
+    <div style="font-size:12px;color:#666;margin-bottom:4px">حالة Warranty</div>
+    <div style="font-size:16px;font-weight:700">${ws?ws.text:'—'}</div>
+  </div>`:''}
+  ${a.notes?`<div class="notes-box"><div class="lbl">Notes</div><div>${a.notes}</div></div>`:''}
+  <div class="status-box">
+    <div class="s-label">حالة الأصل الحالية</div>
+    <div class="s-val">${a.status}</div>
+  </div>
+  <div class="sign-row">
+    <div class="sign-box">توقيع المُسلِّم</div>
+    <div class="sign-box">توقيع المُستلِم</div>
+    <div class="sign-box">اعتماد المسؤول</div>
+  </div>
+  <div class="footer">National Transport Safety Center — Asset Management System · ${new Date().getFullYear()}</div>
+  <script>window.onload=()=>{setTimeout(()=>{window.print();},500)}<\/script>
+  <\/body><\/html>`);
+}
+
+// ── UI HELPERS ─────────────────────────────────────────────────────────────
+function openModal(id=null){
+  editId=id;
+  const a=id?assets.find(x=>x.id==id):null;
+  document.getElementById('modal-title').textContent=id?'Edit Asset':'Add New Asset';
+  document.getElementById('f-type').value=a?.asset_type||'Laptop';
+  document.getElementById('f-status').value=a?.status||'Available';
+  document.getElementById('f-name').value=a?.name||'';
+  document.getElementById('f-brand').value=a?.brand||'';
+  document.getElementById('f-serial').value=a?.serial||'';
+  document.getElementById('f-user').value=a?.assigned_to||'';
+  document.getElementById('f-dept').value=a?.department||'';
+  document.getElementById('f-date').value=a?.received_date||'';
+  document.getElementById('f-warranty').value=a?.warranty_end||'';
+  document.getElementById('f-notes').value=a?.notes||'';
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open');editId=null}
+function openUserModal(){document.getElementById('u-username').value='';document.getElementById('u-fullname').value='';document.getElementById('u-pass').value='';document.getElementById('user-overlay').classList.add('open')}
+function closeUserModal(){document.getElementById('user-overlay').classList.remove('open')}
+
+function showPanel(name,el){
+  if(name==='profile'){loadProfile();}
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='log')loadLogs();
+  if(name==='users')loadUsers();
+}
+
+function toast(msg,good=true){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.borderColor=good?'var(--border2)':'rgba(231,76,60,0.3)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function fmtDate(d){if(!d)return'—';const p=String(d).split('T')[0].split('-');return p[2]+'/'+p[1]+'/'+p[0]}
+function fmtDt(d){if(!d)return'—';return new Date(d).toLocaleString('ar-SA')}
+function show(id,type='block'){document.getElementById(id).style.display=type}
+function hide(id){document.getElementById(id).style.display='none'}
+
+function exportCSV(){
+  const rows=[['Asset ID','Type','الاسم','Brand','Serial Number','المستخدم','Department','Status','Received Date','انتهاء Warranty','Notes']];
+  assets.forEach(a=>rows.push([a.asset_id,a.asset_type,a.name,a.brand,a.serial,a.assigned_to,a.department,a.status,a.received_date,a.warranty_end,a.notes]));
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const el=document.createElement('a');
+  el.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  el.download='assets.csv';el.click();
+}
+
+[document.getElementById('overlay'),document.getElementById('qr-overlay'),document.getElementById('user-overlay')]
+  .forEach(el=>el.addEventListener('click',e=>{if(e.target===e.currentTarget)e.target.classList.remove('open')}));
+
+// ── PROFILE ──────────────────────────────────────────────────────────────
+function loadProfile(){
+  if(!currentUser) return;
+  document.getElementById('p-fullname').value = currentUser.fullname||'';
+  document.getElementById('p-username').value = currentUser.username||'';
+  ['p-old','p-new','p-confirm'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('profile-msg').textContent='';
+}
+async function saveProfile(){
+  const fullname=document.getElementById('p-fullname').value.trim();
+  const username=document.getElementById('p-username').value.trim();
+  const oldPw=document.getElementById('p-old').value;
+  const newPw=document.getElementById('p-new').value;
+  const confirmPw=document.getElementById('p-confirm').value;
+  const msg=document.getElementById('profile-msg');
+  msg.textContent='';
+  if(!username){msg.style.color='#fc8181';msg.textContent='Username مطلوب';return;}
+  let update={fullname,username};
+  if(newPw||oldPw){
+    if(oldPw!==currentUser.password){msg.style.color='#fc8181';msg.textContent='Password الحالية غير صحيحة';return;}
+    if(newPw.length<6){msg.style.color='#fc8181';msg.textContent='Password الجديدة 6 أحرف على الأقل';return;}
+    if(newPw!==confirmPw){msg.style.color='#fc8181';msg.textContent='Password الجديدة غير متطابقة';return;}
+    update.password = await hashPassword(newPw);
+  }
+  const {error}=await DB.from('admins').update(update).eq('id',currentUser.id);
+  if(error){msg.style.color='#fc8181';msg.textContent='Error: '+error.message;return;}
+  currentUser={...currentUser,...update};
+  sessionStorage.setItem('current_user',JSON.stringify(currentUser));
+  document.getElementById('sb-username').textContent=currentUser.fullname||currentUser.username;
+  const roleEl=document.getElementById('sb-userrole');
+  if(roleEl) roleEl.textContent=currentUser.username?'@'+currentUser.username:'Admin';
+  msg.style.color='var(--accent)';msg.textContent='✅ Saved successfully';
+  setTimeout(()=>msg.textContent='',3000);
+}
+
+// ── AI IMPORT ─────────────────────────────────────────────────────────────
+let importData=[];
+function handleDrop(e){e.preventDefault();const file=e.dataTransfer.files[0];if(file)processFile(file);}
+function handleFile(e){const file=e.target.files[0];if(file)processFile(file);}
+
+async function processFile(file){
+  document.getElementById('import-drop').style.display='none';
+  document.getElementById('import-progress').style.display='block';
+  setIStep(1,'active');
+  const rows=await readExcel(file);
+  setIStep(1,'done');setIStep(2,'active');
+  const analyzed=await analyzeWithAI(rows);
+  setIStep(2,'done');setIStep(3,'active');
+  importData=analyzed;
+  showImportPreview(analyzed);
+  setIStep(3,'done');
+  document.getElementById('import-preview').style.display='block';
+}
+function setIStep(n,state){
+  const el=document.getElementById('step'+n),ic=document.getElementById('s'+n+'i');
+  const icons={1:{done:'✅',active:'⏳'},2:{done:'✅',active:'⏳'},3:{done:'✅',active:'👁️'}};
+  if(ic)ic.textContent=icons[n][state]||ic.textContent;
+  if(el){el.style.background=state==='done'?'rgba(46,204,113,0.1)':state==='active'?'rgba(52,152,219,0.1)':'rgba(255,255,255,0.05)';
+  el.style.border=state==='done'?'1px solid rgba(46,204,113,0.2)':state==='active'?'1px solid rgba(52,152,219,0.2)':'none';}
+}
+function readExcel(file){
+  return new Promise(res=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      res(XLSX.utils.sheet_to_json(ws,{header:1,defval:''}));
+    };
+    reader.readAsBinaryString(file);
+  });
+}
+async function analyzeWithAI(rows){
+  if(!rows||rows.length<2)return[];
+  // Remove empty rows
+  const validRows = rows.filter(r=>r&&r.some(c=>c));
+  if(validRows.length<2)return[];
+
+  const headers = validRows[0];
+  const dataRows = validRows.slice(1).filter(r=>{
+    // Skip rows that are header duplicates
+    const first = String(r[0]||'').trim();
+    return first && !['asset id','asset name','#','رقم'].includes(first.toLowerCase());
+  });
+
+  // Build smart prompt with full column understanding
+  const headerStr = JSON.stringify(headers);
+  const sample = JSON.stringify(dataRows.slice(0,8));
+  const allData = JSON.stringify(dataRows.slice(0,200));
+
+  const prompt = `You خبير تحليل بيانات متخصص في أصول تقنية المعلومات. 
+لديك جدول Excel من National Transport Safety Center NTSC.
+
+الأعمدة: ${headerStr}
+نماذج من البيانات: ${sample}
+
+قواعد التصنيف الدقيق:
+- asset_type: صنّف بدقة من Sub Minor Category:
+  * "LaptopS – PC DESKTOPS" أو "ALL IN ONE" أو "DESKTOP" → Laptop
+  * "DISPLAY SCREENS & MONITORS" أو "AUDIO DISPLAY EQUIPMENT" أو "Display Screen" أو "PROJECTORS" → Monitor  
+  * "Mobile" أو "PERSONAL COMMUNICATION DEVICES" أو "Telephone" أو "iPhone" → Phone
+  * "SCANNERS & PRINTERS" → Printer
+  * "SERVERS, SWITCHES AND ROUTERS" أو "SERVER" أو "Network Switch" أو "Access Point" → Router
+  * "VIDEO CONFERENCE EQUIPMENT" أو "CAMERA" أو "CAMERAS" → Other
+  * "Apple Accessories" أو "Docking Station" أو "UPS" أو "UNINTERRUPTED POWER SUPPLY" → Other
+  * أي شيء آخر → Other
+
+- status: 
+  * "In Use" أو "use" → Assigned
+  * "Stock" أو "New" أو فارغ → Available
+  * "Damaged" → مُعطَّل
+
+- name: استخدم Asset Name أو Category Details (الأكثر وصفاً)
+- brand: Asset Manufacturer
+- serial: Serial Number فقط (لا تضع أرقام Asset ID هنا)
+- assigned_to: Asset Owner (المالك/المستخدم)
+- department: استخرجه من Asset Location أو Asset Owner (الجزء الأخير بعد " - ")
+- notes: إذا كان في Location معلومة مفيدة عن الموقع أضفها
+
+أجب بـ JSON array فقط بدون أي نص أو markdown:
+[{"name":"...","asset_type":"...","brand":"...","serial":"...","assigned_to":"...","department":"...","status":"...","notes":"..."}]
+
+البيانات الكاملة للتحويل: ${allData}`;
+
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:16000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const d=await r.json();
+    if(d.error){throw new Error(d.error.message);}
+    const text=(d.content?.[0]?.text||'[]').replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(text);
+    // Clean serial numbers - remove .0 from numeric serials
+    parsed.forEach(p=>{if(p.serial)p.serial=String(p.serial).replace(/\.0$/,'').trim();});
+    // Process in batches if more than 200 rows
+    if(dataRows.length>200){
+      const remaining=await analyzeRemainingRows(dataRows.slice(200));
+      return [...parsed,...remaining];
+    }
+    return parsed;
+  }catch(e){
+    console.error('AI error, using local mapping:',e);
+    return dataRows.map(r=>localMap(r,headers));
+  }
+}
+
+async function analyzeRemainingRows(rows){
+  // Process remaining rows locally with smart mapping
+  return rows.map(r=>localMap(r,null));
+}
+
+function localMap(r,headers){
+  const subCat=String(r[3]||'');
+  const statusRaw=String(r[6]||'').trim();
+  const location=String(r[10]||'');
+  // Extract department from location (after last " - ")
+  const deptMatch=location.match(/ - ([^-]+)$/);
+  const dept=deptMatch?deptMatch[1].trim():(String(r[7]||''));
+  return{
+    name:String(r[1]||r[4]||'غير محدد'),
+    asset_type:mapCategory(subCat),
+    brand:String(r[5]||''),
+    serial:r[11]?(typeof r[11]==='number'?String(Math.round(r[11])):String(r[11]).trim()):'',
+    assigned_to:String(r[7]||''),
+    department:dept,
+    status:mapStatus(statusRaw),
+    notes:location?'الموقع: '+location.split(' - ')[0].trim():''
+  };
+}
+
+function mapCategory(sub){
+  const s=sub.toLowerCase();
+  if(/laptop|desktop|all in one|computer/.test(s))return'Laptop';
+  if(/monitor|display|screen|audio display|projector/.test(s))return'Monitor';
+  if(/mobile|phone|telephone|personal comm/.test(s))return'Phone';
+  if(/printer|scanner/.test(s))return'Printer';
+  if(/server|switch|router|access point/.test(s))return'Router';
+  if(/tablet|ipad/.test(s))return'Tablet';
+  return'Other';
+}
+
+function mapStatus(s){
+  const sl=s.toLowerCase();
+  if(sl==='in use'||sl==='use')return'Assigned';
+  if(sl==='damaged')return'مُعطَّل';
+  if(sl==='stock'||sl==='new')return'Available';
+  return'Available';
+}
+
+// Legacy type guesser (kept for reference)
+function guessType(n){
+  n=n.toLowerCase();
+  if(/laptop|Laptop|notebook|dell|hp|lenovo|macbook|thinkpad|elitebook/.test(n))return'Laptop';
+  if(/monitor|Monitor|display|screen/.test(n))return'Monitor';
+  if(/phone|Phone|iphone|mobile|جوال|galaxy/.test(n))return'Phone';
+  if(/printer|Printer|canon|epson/.test(n))return'Printer';
+  if(/router|Router|switch|cisco/.test(n))return'Router';
+  if(/tablet|ipad|Tablet/.test(n))return'Tablet';
+  return'Other';
+}
+function showImportPreview(data){
+  const IS={'Laptop':'💻','Monitor':'🖥️','Phone':'📱','Printer':'🖨️','Router':'📡','Tablet':'📟','Other':'📦'};
+  document.getElementById('import-stats').innerHTML=
+    '<div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">'+data.length+'</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Total Records</div></div>'+
+    '<div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center"><div style="font-size:26px;font-weight:800;color:#5dade2">'+[...new Set(data.map(d=>d.asset_type))].length+'</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Types</div></div>'+
+    '<div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center"><div style="font-size:26px;font-weight:800;color:var(--gold)">'+data.filter(d=>d.assigned_to).length+'</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Assigned</div></div>';
+  document.getElementById('preview-tbody').innerHTML=data.slice(0,50).map(d=>'<tr><td>'+(IS[d.asset_type]||'📦')+' '+d.asset_type+'</td><td><strong>'+d.name+'</strong></td><td>'+(d.brand||'—')+'</td><td style="font-family:monospace;font-size:11px">'+(d.serial||'—')+'</td><td>'+(d.assigned_to||'—')+'</td><td>'+(d.department||'—')+'</td><td><span class="badge '+(d.status==='Assigned'?'b-green':d.status==='صيانة'?'b-warn':'b-blue')+'">'+(d.status||'Available')+'</span></td><td style="font-size:11px">'+(d.warranty_end||'—')+'</td></tr>').join('');
+}
+async function confirmImport(){
+  if(!importData||importData.length===0){toast('No data to import',false);return;}
+  const btn=document.getElementById('confirm-btn');
+  btn.textContent='⏳ جاري الImported...';btn.disabled=true;
+  const records=importData.map(d=>({asset_type:d.asset_type||'Other',name:d.name||'غير محدد',
+    brand:d.brand||null,serial:d.serial||null,assigned_to:d.assigned_to||null,
+    department:d.department||null,status:d.status||'Available',
+    received_date:d.received_date||null,warranty_end:d.warranty_end||null,notes:d.notes||null}));
+  try{
+    // Insert in batches of 500 to avoid Supabase limits
+    const batchSize=500;
+    let inserted=0;
+    for(let i=0;i<records.length;i+=batchSize){
+      const batch=records.slice(i,i+batchSize);
+      const{error}=await DB.from('assets').insert(batch);
+      if(error)throw error;
+      inserted+=batch.length;
+    }
+    await logAction('Imported','تم Imported '+inserted+' أصل من Excel');
+    toast('✅ تم Imported '+importData.length+' أصل بنجاح!');
+    sendEmailNotification('تم Imported أصول من Excel', `عدد الأصول المستوردة: ${importData.length} أصل`);
+    resetImport();loadAssets();
+    showPanel('assets', document.querySelector('.nav-item'));
+  }catch(e){toast('❌ '+e.message,false);}
+  btn.textContent='✅ Import All';btn.disabled=false;
+}
+function resetImport(){
+  document.getElementById('import-drop').style.display='block';
+  document.getElementById('import-progress').style.display='none';
+  document.getElementById('import-preview').style.display='none';
+  document.getElementById('file-inp').value='';importData=[];
+}
+
+// ══════════════════════════════════════════════════════════════
+// DELETE ALL ASSETS
+// ══════════════════════════════════════════════════════════════
+async function deleteAllAssets(){
+  const count = assets.length;
+  if(count === 0){toast('لا توجد أصول للDELETE', false); return;}
+  document.getElementById('delete-count').textContent = count;
+  document.getElementById('delete-confirm-inp').value = '';
+  document.getElementById('delete-confirm-btn').disabled = true;
+  const dov=document.getElementById('delete-all-ov');dov.style.display='flex';dov.classList.add('open');
+}
+async function executeDeleteAll(){
+  const count = assets.length;
+  const dov2=document.getElementById('delete-all-ov');dov2.style.display='none';dov2.classList.remove('open');
+  const btn = document.getElementById('delete-confirm-btn');
+  btn.textContent = '⏳ جاري الDELETE...';
+  try{
+    const {error} = await DB.from('assets').delete().neq('id', 0);
+    if(error) throw error;
+    await logAction('DELETE الكل', `تم Delete All Assets (${count} أصل) بواسطة: ${currentUser.username}`);
+    await sendEmailNotification('Delete All Assets', `قام ${currentUser.fullname||currentUser.username} بDelete All Assets (${count} أصل)`);
+    toast(`🗑️ تم DELETE ${count} أصل`);
+    loadAssets();
+  }catch(e){toast('❌ '+e.message, false);}
+}
+
+// ══════════════════════════════════════════════════════════════
+// EMAIL NOTIFICATIONS via EmailJS
+// ══════════════════════════════════════════════════════════════
+async function getAdminEmails(){
+  try{
+    const {data} = await DB.from('admins').select('email, fullname, username').not('email','is',null);
+    const filtered = (data||[]).filter(a=>a.email&&a.email.includes('@'));
+    // Deduplicate by email address
+    const seen = new Set();
+    return filtered.filter(a=>{
+      if(seen.has(a.email.toLowerCase())) return false;
+      seen.add(a.email.toLowerCase());
+      return true;
+    });
+  }catch(e){return [];}
+}
+
+async function sendEmailNotification(subject, body, extraDetails=''){
+  try{
+    if(typeof emailjs === 'undefined'){
+      console.warn('EmailJS not loaded - check Public Key setup');
+      return;
+    }
+    if(window.EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
+      console.warn('EmailJS Public Key not configured');
+      return;
+    }
+    const admins = await getAdminEmails();
+    if(!admins.length){
+      console.warn('No admin emails configured');
+      return;
+    }
+    const fullBody = [
+      `📋 ${subject}`,
+      '─'.repeat(30),
+      body,
+      extraDetails||'',
+      '─'.repeat(30),
+      `📅 التاريخ: ${new Date().toLocaleString('ar-SA')}`,
+      `👤 المستخدم: ${currentUser?.fullname||currentUser?.username||'—'}`,
+      '',
+      'نظام إدارة الأصول — National Transport Safety Center'
+    ].filter(Boolean).join('\n');
+
+    for(const admin of admins){
+      await emailjs.send('ntsc_service', 'template_tiie4cv', {
+        to_email:   admin.email,
+        to_name:    admin.fullname||admin.username,
+        subject:    `[NTSC Assets] ${subject}`,
+        message:    fullBody,
+        title:      subject,
+        name:       currentUser?.fullname||currentUser?.username||'NTSC System',
+        time:       new Date().toLocaleString('ar-SA'),
+        from_name:  'نظام NTSC للأصول',
+        reply_to:   admin.email,
+      });
+    }
+    console.log(`✅ Email sent to ${admins.length} admin(s)`);
+  }catch(e){
+    console.warn('Email notification failed:', e.message||e);
+  }
+}
+
+async function sendWarrantyAlerts(){
+  const expiring = assets.filter(a=>{
+    if(!a.warranty_end) return false;
+    const s = warrantyStatus(a.warranty_end);
+    return s && s.days >= 0 && s.days <= 90;
+  });
+  const expired = assets.filter(a=>{
+    if(!a.warranty_end) return false;
+    const s = warrantyStatus(a.warranty_end);
+    return s && s.days < 0;
+  });
+  if(!expiring.length && !expired.length) return;
+  let body = '';
+  if(expired.length){
+    body += `🔴 ضمانات منتهية (${expired.length}):\n`;
+    expired.slice(0,20).forEach(a=>body+=`  • ${a.name} (${a.asset_id}) — انتهى: ${fmtDate(a.warranty_end)}\n`);
+  }
+  if(expiring.length){
+    body += `\n⚠️ ضمانات تنتهي خلال 90 يوم (${expiring.length}):\n`;
+    expiring.slice(0,20).forEach(a=>{
+      const s=warrantyStatus(a.warranty_end);
+      body+=`  • ${a.name} (${a.asset_id}) — ${s.text}\n`;
+    });
+  }
+  await sendEmailNotification('تنبيه: حالة Warranties', body);
+  toast('📧 تم إرسال تقرير Warranties');
+}
+
+async function exportAndEmailAllAssets(){
+  // Send full inventory email to all admins
+  const total = assets.length;
+  const assigned = assets.filter(a=>a.status==='Assigned').length;
+  const available = assets.filter(a=>a.status==='Available').length;
+  const maintenance = assets.filter(a=>a.status==='صيانة'||a.status==='مُعطَّل').length;
+  const body = `تقرير شامل بجميع الأصول التقنية\n\n` +
+    `📊 الإجماليات:\n` +
+    `  • Total Assets: ${total}\n` +
+    `  • Assigned: ${assigned}\n` +
+    `  • Available: ${available}\n` +
+    `  • صيانة/معطّل: ${maintenance}\n\n` +
+    `يمكنك تصدير القائمة الكاملة من النظام بالضغط على زر CSV.`;
+  await sendEmailNotification('تقرير شامل بالأصول', body);
+  toast('📧 Full report sent');
+}
+
+// ══════════════════════════════════════════════════════════════
+// UPDATED SAVE USER (with email)
+// ══════════════════════════════════════════════════════════════
+async function saveUserNew(){
+  const un=document.getElementById('u-username').value.trim();
+  const fn=document.getElementById('u-fullname').value.trim();
+  const pw=document.getElementById('u-pass').value;
+  const em=document.getElementById('u-email')?.value.trim()||'';
+  if(!un){toast('Username مطلوب',false);return;}
+  if(!pw||pw.length<6){toast('Password 6 أحرف على الأقل',false);return;}
+  const hashedPw = await hashPassword(pw);
+  const {error}=await DB.from('admins').insert([{username:un,fullname:fn,password:hashedPw,email:em||null}]);
+  if(error){toast('❌ '+error.message,false);return;}
+  toast('✅ تم Added الأدمن');
+  closeUserModal();loadUsers();
+}
+
+// ══════════════════════════════════════════════════════════════
+// UPDATED SAVE PROFILE (with email)
+// ══════════════════════════════════════════════════════════════
+async function saveProfileNew(){
+  const fullname=document.getElementById('p-fullname').value.trim();
+  const username=document.getElementById('p-username').value.trim();
+  const email=document.getElementById('p-email')?.value.trim()||'';
+  const oldPw=document.getElementById('p-old').value;
+  const newPw=document.getElementById('p-new').value;
+  const confirmPw=document.getElementById('p-confirm').value;
+  const msg=document.getElementById('profile-msg');
+  msg.textContent='';
+  if(!username){msg.style.color='#fc8181';msg.textContent='Username مطلوب';return;}
+  let update={fullname,username,email:email||null};
+  if(newPw||oldPw){
+    if(oldPw!==currentUser.password){msg.style.color='#fc8181';msg.textContent='Password الحالية غير صحيحة';return;}
+    if(newPw.length<6){msg.style.color='#fc8181';msg.textContent='Password الجديدة 6 أحرف على الأقل';return;}
+    if(newPw!==confirmPw){msg.style.color='#fc8181';msg.textContent='Password الجديدة غير متطابقة';return;}
+    update.password = await hashPassword(newPw);
+  }
+  const {error}=await DB.from('admins').update(update).eq('id',currentUser.id);
+  if(error){msg.style.color='#fc8181';msg.textContent='Error: '+error.message;return;}
+  currentUser={...currentUser,...update};
+  sessionStorage.setItem('current_user',JSON.stringify(currentUser));
+  document.getElementById('sb-username').textContent=currentUser.fullname||currentUser.username;
+  const roleEl=document.getElementById('sb-userrole');
+  if(roleEl) roleEl.textContent=currentUser.username?'@'+currentUser.username:'Admin';
+  msg.style.color='var(--accent)';msg.textContent='✅ Saved successfully';
+  setTimeout(()=>msg.textContent='',3000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOAD PROFILE (with email)
+// ══════════════════════════════════════════════════════════════
+function loadProfileNew(){
+  if(!currentUser) return;
+  document.getElementById('p-fullname').value=currentUser.fullname||'';
+  document.getElementById('p-username').value=currentUser.username||'';
+  const pe=document.getElementById('p-email');
+  if(pe) pe.value=currentUser.email||'';
+  ['p-old','p-new','p-confirm'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('profile-msg').textContent='';
+}
+
+// ══════════════════════════════════════════════════════════════
+// OVERRIDE ORIGINAL FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  // Override saveUser with new version that includes email
+  window.saveUser = saveUserNew;
+  // Override saveProfile with new version
+  window.saveProfile = saveProfileNew;
+  // Override loadProfile with new version
+  window.loadProfile = loadProfileNew;
+  
+  // Schedule daily warranty check
+  setTimeout(async()=>{
+    if(assets.length > 0){
+      const warningAssets = assets.filter(a=>{
+        if(!a.warranty_end) return false;
+        const s=warrantyStatus(a.warranty_end);
+        return s&&s.days>=0&&s.days<=90;
+      });
+      if(warningAssets.length>0) renderWarrantyAlerts();
+    }
+  }, 3000);
+});
+
+
+// ── EDIT USER MODAL ────────────────────────────────────────
+function openEditUserModal(id, username, fullname, email){
+  document.getElementById('eu-id').value = id;
+  document.getElementById('eu-username').value = username;
+  document.getElementById('eu-fullname').value = fullname;
+  document.getElementById('eu-email').value = email;
+  document.getElementById('eu-pass').value = '';
+  const m = document.getElementById('edit-user-ov');
+  m.style.display = 'flex'; m.classList.add('open');
+}
+function closeEditUserModal(){
+  const m = document.getElementById('edit-user-ov');
+  m.style.display = 'none'; m.classList.remove('open');
+}
+async function saveEditUser(){
+  const id = document.getElementById('eu-id').value;
+  const username = document.getElementById('eu-username').value.trim();
+  const fullname = document.getElementById('eu-fullname').value.trim();
+  const email = document.getElementById('eu-email').value.trim();
+  const pass = document.getElementById('eu-pass').value;
+  if(!username){toast('Username مطلوب', false); return;}
+  let update = {username, fullname, email: email||null};
+  if(pass){
+    if(pass.length < 6){toast('Password 6 أحرف على الأقل', false); return;}
+    update.password = await hashPassword(pass);
+  }
+  const {error} = await DB.from('admins').update(update).eq('id', id);
+  if(error){toast('❌ '+error.message, false); return;}
+  // Update current user if editing self
+  if(parseInt(id) === currentUser.id){
+    currentUser = {...currentUser, ...update};
+    sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+    document.getElementById('sb-username').textContent = currentUser.fullname||currentUser.username;
+    const re = document.getElementById('sb-userrole');
+    if(re) re.textContent = '@'+currentUser.username;
+  }
+  toast('✅ User updated');
+  closeEditUserModal();
+  loadUsers();
+}
+
+// ══════════════════════════════════════════════════════════
+// RESET PASSWORD (from login screen)
+// ══════════════════════════════════════════════════════════
+function showResetModal(){
+  document.getElementById('reset-username').value='';
+  document.getElementById('reset-email').value='';
+  document.getElementById('reset-msg').textContent='';
+  document.getElementById('reset-modal').style.display='flex';
+}
+function closeResetModal(){
+  document.getElementById('reset-modal').style.display='none';
+}
+async function doResetPassword(){
+  const username=document.getElementById('reset-username').value.trim();
+  const email=document.getElementById('reset-email').value.trim();
+  const msg=document.getElementById('reset-msg');
+  msg.style.color='rgba(255,255,255,0.6)';
+  msg.textContent='';
+  if(!username||!email){msg.style.color='#ec7063';msg.textContent='الرجاء إدخال Username والإيميل';return;}
+  try{
+    // Find admin by username + email
+    const{data,error}=await DB.from('admins').select('*').eq('username',username).eq('email',email).single();
+    if(error||!data){msg.style.color='#ec7063';msg.textContent='لم يتم العثور على حساب بهذه البيانات';return;}
+    // Generate new random password
+    const chars='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#';
+    const newPass=Array.from({length:10},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+    // Update password in DB
+    await DB.from('admins').update({password:newPass}).eq('id',data.id);
+    // Send email with new password
+    if(typeof emailjs!=='undefined'&&window.EMAILJS_PUBLIC_KEY!=='YOUR_PUBLIC_KEY'){
+      await emailjs.send('ntsc_service','template_tiie4cv',{
+        to_email:email,
+        to_name:data.fullname||username,
+        subject:'استعادة Password',
+        message:`تم إعادة تعيين Password الخاصة بحسابك في نظام NTSC.
+
+Password الجديدة: ${newPass}
+
+يُرجى تغييرها فور تسجيل الدخول من إعدادات حسابك.`,
+        title:'استعادة Password',
+        name:'نظام NTSC للأصول',
+        time:new Date().toLocaleString('ar-SA'),
+      });
+    }
+    msg.style.color='#2ecc71';
+    msg.textContent='✅ تم إرسال Password الجديدة على إيميلك';
+    setTimeout(()=>closeResetModal(),3000);
+  }catch(e){msg.style.color='#ec7063';msg.textContent='❌ خطأ: '+e.message;}
+}
+
+// ══════════════════════════════════════════════════════════
+// RESET USER PASSWORD (from users panel)
+// ══════════════════════════════════════════════════════════
+function openResetUserPass(id,username){
+  document.getElementById('rsu-id').value=id;
+  document.getElementById('rsu-name').textContent='@'+username;
+  document.getElementById('rsu-pass').value='';
+  document.getElementById('rsu-confirm').value='';
+  document.getElementById('reset-user-modal').style.display='flex';
+}
+async function confirmResetUserPass(){
+  const id=document.getElementById('rsu-id').value;
+  const pass=document.getElementById('rsu-pass').value;
+  const confirm=document.getElementById('rsu-confirm').value;
+  if(!pass||pass.length<6){toast('Password 6 أحرف على الأقل',false);return;}
+  if(pass!==confirm){toast('Password غير متطابقة',false);return;}
+  const hashedPass = await hashPassword(pass);
+  const{error}=await DB.from('admins').update({password:hashedPass}).eq('id',id);
+  if(error){toast('❌ '+error.message,false);return;}
+  if(parseInt(id)===currentUser?.id){
+    currentUser.password=pass;
+    sessionStorage.setItem('current_user',JSON.stringify(currentUser));
+  }
+  document.getElementById('reset-user-modal').style.display='none';
+  toast('✅ تم تغيير Password');
+  loadUsers();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECURITY: Password Hashing (SHA-256)
+// ═══════════════════════════════════════════════════════════════
+async function hashPassword(password){
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + 'NTSC_SALT_2026');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECURITY: Brute Force Protection
+// ═══════════════════════════════════════════════════════════════
+const loginAttempts = {};
+function checkBruteForce(username){
+  const now = Date.now();
+  if(!loginAttempts[username]) loginAttempts[username] = {count:0, firstAttempt:now, blocked:false};
+  const rec = loginAttempts[username];
+  // Reset after 15 minutes
+  if(now - rec.firstAttempt > 15 * 60 * 1000){
+    rec.count = 0; rec.firstAttempt = now; rec.blocked = false;
+  }
+  if(rec.blocked){
+    const remaining = Math.ceil((15*60*1000 - (now - rec.firstAttempt)) / 60000);
+    return `محظور مؤقتاً. حاول بعد ${remaining} دقيقة`;
+  }
+  rec.count++;
+  if(rec.count >= 5){
+    rec.blocked = true;
+    return 'تم تجاوز عدد المحاولات المسموحة. محظور لمدة 15 دقيقة';
+  }
+  return null;
+}
+function clearLoginAttempts(username){
+  delete loginAttempts[username];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STABILITY: Keep Supabase Alive (ping every 3 days)
+// ═══════════════════════════════════════════════════════════════
+async function keepAlive(){
+  try{
+    const lastPing = localStorage.getItem('ntsc_last_ping');
+    const now = Date.now();
+    // Ping every 3 days
+    if(!lastPing || now - parseInt(lastPing) > 3 * 24 * 60 * 60 * 1000){
+      await DB.from('admins').select('id').limit(1);
+      localStorage.setItem('ntsc_last_ping', now.toString());
+      console.log('✅ Supabase keep-alive ping sent');
+    }
+  }catch(e){ console.warn('Keep-alive failed:', e.message); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BACKUP: Auto export to CSV every 7 days
+// ═══════════════════════════════════════════════════════════════
+async function checkAutoBackup(){
+  const lastBackup = localStorage.getItem('ntsc_last_backup');
+  const now = Date.now();
+  if(!lastBackup || now - parseInt(lastBackup) > 7 * 24 * 60 * 60 * 1000){
+    const shouldBackup = !lastBackup; // First time, ask
+    if(assets.length > 0){
+      autoBackupCSV();
+      localStorage.setItem('ntsc_last_backup', now.toString());
+    }
+  }
+}
+
+function autoBackupCSV(){
+  const rows=[['Asset ID','Type','الاسم','Brand','Serial Number','المستخدم','Department','Status','Received Date','انتهاء Warranty','Notes']];
+  assets.forEach(a=>rows.push([a.asset_id,a.asset_type,a.name,a.brand,a.serial,a.assigned_to,a.department,a.status,a.received_date,a.warranty_end,a.notes]));
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const el=document.createElement('a');
+  el.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  el.download='NTSC_Backup_'+new Date().toISOString().split('T')[0]+'.csv';
+  el.click();
+  toast('💾 Auto backup exported');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SESSION: Auto logout after 8 hours inactivity
+// ═══════════════════════════════════════════════════════════════
+let lastActivity = Date.now();
+document.addEventListener('mousemove', ()=>lastActivity=Date.now());
+document.addEventListener('keypress', ()=>lastActivity=Date.now());
+setInterval(()=>{
+  if(currentUser && Date.now() - lastActivity > 8 * 60 * 60 * 1000){
+    toast('انتهت جلستك تلقائياً لعدم النشاط', false);
+    setTimeout(()=>{ sessionStorage.removeItem('current_user'); location.reload(); }, 2000);
+  }
+}, 60000);
+
+
+// ═══════════════════════════════════════════════════════════════
+// LANGUAGE SYSTEM — EN / AR
+// ═══════════════════════════════════════════════════════════════
+const TRANSLATIONS = {
+  en: {
+    // Sidebar
+    nav_assets: '📋 Assets',
+    nav_import: '🤖 Smart Import',
+    nav_warranty: '🛡️ Warranties',
+    nav_reports: '📊 Reports',
+    nav_users: '👥 Users',
+    nav_profile: '⚙️ My Account',
+    nav_log: '📜 Activity Log',
+    btn_add_asset: '+ Add New Asset',
+    btn_signout: '🚪 Sign Out',
+    // Stats
+    stat_total: 'Total Assets',
+    stat_assigned: 'Assigned',
+    stat_available: 'Available',
+    stat_maintenance: 'Maintenance',
+    stat_warranty: 'Warranty Expiring',
+    // Pages
+    page_assets_title: '📋 Assets',
+    page_assets_sub: 'Manage and track all IT assets',
+    page_import_title: '🤖 AI-Powered Smart Import',
+    page_import_sub: 'Upload any Excel or CSV file — AI will analyze and import all assets automatically',
+    page_warranty_title: '🛡️ Warranties',
+    page_reports_title: '📊 Reports',
+    page_users_title: '👥 Users',
+    page_users_sub: 'Manage admin accounts',
+    page_profile_title: '⚙️ Account Settings',
+    page_profile_sub: 'Update your login information',
+    page_log_title: '📜 Activity Log',
+    // Toolbar
+    search_placeholder: 'Search by name, serial number or user...',
+    filter_all_types: 'All Types',
+    filter_all_status: 'All Statuses',
+    type_laptop: 'Laptop',
+    type_monitor: 'Monitor',
+    type_phone: 'Phone',
+    type_printer: 'Printer',
+    type_router: 'Router',
+    type_tablet: 'Tablet',
+    type_other: 'Other',
+    status_assigned: 'Assigned',
+    status_available: 'Available',
+    status_maintenance: 'Maintenance',
+    status_broken: 'Out of Service',
+    btn_export: '⬇ Export',
+    btn_delete_all: '🗑️ Delete All',
+    // Table
+    th_asset_id: 'Asset ID',
+    th_type: 'Type',
+    th_name: 'Name / Model',
+    th_serial: 'Serial Number',
+    th_assigned_to: 'Assigned To',
+    th_dept: 'Department',
+    th_status: 'Status',
+    th_warranty: 'Warranty',
+    th_actions: 'Actions',
+    th_received: 'Received',
+    th_warranty_end: 'Warranty End',
+    // Modal
+    modal_add_asset: 'Add New Asset',
+    modal_edit_asset: 'Edit Asset',
+    section_basic: 'Basic Information',
+    section_assignment: 'Assignment & Warranty',
+    section_notes: 'Notes',
+    lbl_type: 'Type *',
+    lbl_status: 'Status *',
+    lbl_name: 'Name / Model *',
+    lbl_brand: 'Brand',
+    lbl_serial: 'Serial Number',
+    lbl_user: 'Assigned To',
+    lbl_dept: 'Department',
+    lbl_received: 'Received Date',
+    lbl_warranty: 'Warranty End',
+    lbl_notes: 'Notes',
+    btn_cancel: 'Cancel',
+    btn_save: '💾 Save',
+    // Users
+    btn_add_admin: '+ Add Admin',
+    modal_add_admin: 'Add New Admin',
+    lbl_username: 'Username *',
+    lbl_fullname: 'Full Name',
+    lbl_password: 'Password *',
+    lbl_email: '📧 Email (for notifications)',
+    lbl_email_short: 'Email',
+    no_email_warning: '⚠️ No email — will not receive notifications',
+    btn_edit: '✏️ Edit',
+    btn_delete: '🗑️ Delete',
+    btn_password: '🔑 Password',
+    you_label: 'You',
+    no_users: 'No users found',
+    last_login: 'Last login:',
+    never_logged: 'Never logged in',
+    role_admin: 'System Admin',
+    // Profile
+    section_account: 'Account Info',
+    section_change_pass: 'Change Password',
+    lbl_current_pass: 'Current Password',
+    lbl_new_pass: 'New Password (min 6 chars)',
+    lbl_confirm_pass: 'Confirm New Password',
+    btn_save_changes: '💾 Save Changes',
+    // Log
+    no_activity: 'No activity yet',
+    // Empty
+    no_results: 'No results found',
+    no_warranty: 'No assets with warranty date',
+    // Modals
+    logout_title: 'Sign Out',
+    logout_msg: 'Are you sure you want to sign out?',
+    btn_yes_signout: 'Yes, Sign Out',
+    delete_all_title: 'Delete All Assets',
+    delete_user_title: 'Delete User',
+    btn_yes_delete: 'Yes, Delete',
+    // Reset
+    reset_title: 'Reset Password',
+    reset_sub: 'Enter your username and email to receive a new password',
+    btn_send_pass: '📧 Send New Password',
+    change_pass_title: 'Change Password',
+    // Import
+    import_drop_title: 'Drag & drop Excel file here or click to browse',
+    import_drop_sub: 'Supports .xlsx, .xls, and .csv — AI understands any format',
+    step1: 'Reading file...',
+    step2: 'Analyzing with AI...',
+    step3: 'Previewing results...',
+    total_records: 'Total Records',
+    btn_import_all: '✅ Import All',
+    // Warranty
+    btn_warranty_report: '📧 Send Warranty Report',
+    warranty_expired: 'Expired ❌',
+    warranty_soon: 'days ⚠️',
+    warranty_ok: 'days remaining ✅',
+    // Reports
+    btn_send_report: '📧 Send Full Report',
+    btn_backup: '💾 Backup',
+    col_dept: 'Department',
+    col_total: 'Total',
+    // Sidebar logo
+    org_name: 'NTSC',
+    org_sub: 'IT Asset Management',
+    sys_label: 'Asset Management System',
+    user_role: 'Admin',
+  },
+  ar: {
+    nav_assets: '📋 الأصول والعهد',
+    nav_import: '🤖 استيراد ذكي',
+    nav_warranty: '🛡️ الضمانات',
+    nav_reports: '📊 التقارير',
+    nav_users: '👥 المستخدمون',
+    nav_profile: '⚙️ حسابي',
+    nav_log: '📜 Activity Log',
+    btn_add_asset: '+ Add New Asset',
+    btn_signout: '🚪 Sign Out',
+    stat_total: 'إجمالي الأصول',
+    stat_assigned: 'Assigned',
+    stat_available: 'متاح',
+    stat_maintenance: 'صيانة / معطّل',
+    stat_warranty: 'ضمان ينتهي قريباً',
+    page_assets_title: '📋 الأصول والعهد',
+    page_assets_sub: 'Manage and track all IT assets',
+    page_import_title: '🤖 استيراد Excel بالذكاء الاصطناعي',
+    page_import_sub: 'Upload Any File Excel — سيحلله الذكاء الاصطناعي ويضيف الأصول تلقائياً',
+    page_warranty_title: '🛡️ الضمانات',
+    page_reports_title: '📊 التقارير',
+    page_users_title: '👥 المستخدمون',
+    page_users_sub: 'Manage admin accounts',
+    page_profile_title: '⚙️ Account Settings',
+    page_profile_sub: 'Update your login information',
+    page_log_title: '📜 Activity Log',
+    search_placeholder: 'ابحث بالاسم أو Serial Number أو المستخدم...',
+    filter_all_types: 'كل الTypes',
+    filter_all_status: 'كل الحالات',
+    type_laptop: 'لابتوب',
+    type_monitor: 'شاشة',
+    type_phone: 'هاتف',
+    type_printer: 'طابعة',
+    type_router: 'راوتر',
+    type_tablet: 'تابلت',
+    type_other: 'أخرى',
+    status_assigned: 'Assigned',
+    status_available: 'متاح',
+    status_maintenance: 'صيانة',
+    status_broken: 'مُعطَّل',
+    btn_export: '⬇ تصدير',
+    btn_delete_all: '🗑️ حذف الكل',
+    th_asset_id: 'رقم العهدة',
+    th_type: 'النوع',
+    th_name: 'الاسم / الموديل',
+    th_serial: 'Serial Number',
+    th_assigned_to: 'الAssigned إليه',
+    th_dept: 'القسم',
+    th_status: 'الحالة',
+    th_warranty: 'الضمان',
+    th_actions: 'إجراءات',
+    th_received: 'Received Date',
+    th_warranty_end: 'Warranty End',
+    modal_add_asset: 'Add New Asset',
+    modal_edit_asset: 'Edit Asset',
+    section_basic: 'Basic Info',
+    section_assignment: 'Assignment & Warranty',
+    section_notes: 'ملاحظات',
+    lbl_type: 'النوع *',
+    lbl_status: 'الحالة *',
+    lbl_name: 'Name / Model *',
+    lbl_brand: 'Brand',
+    lbl_serial: 'Serial Number',
+    lbl_user: 'الAssigned إليه',
+    lbl_dept: 'القسم',
+    lbl_received: 'Received Date',
+    lbl_warranty: 'Warranty End',
+    lbl_notes: 'ملاحظات',
+    btn_cancel: 'Cancel',
+    btn_save: '💾 Save',
+    btn_add_admin: '+ Add Admin',
+    modal_add_admin: 'Add New Admin',
+    lbl_username: 'Username *',
+    lbl_fullname: 'Full Name',
+    lbl_password: 'Password *',
+    lbl_email: '📧 Email (for notifications)',
+    lbl_email_short: 'Email',
+    no_email_warning: '⚠️ No email — will not receive alerts',
+    btn_edit: '✏️ تعديل',
+    btn_delete: '🗑️ حذف',
+    btn_password: '🔑 باسورد',
+    you_label: 'أنت',
+    no_users: 'No users found',
+    last_login: 'آخر دخول:',
+    never_logged: 'Never',
+    role_admin: 'مدير النظام',
+    section_account: 'Account Info',
+    section_change_pass: 'Change Password',
+    lbl_current_pass: 'Current Password',
+    lbl_new_pass: 'New Password (6 أحرف على الأقل)',
+    lbl_confirm_pass: 'تأكيد New Password',
+    btn_save_changes: '💾 Save التغييرات',
+    no_activity: 'No activity yet',
+    no_results: 'No results found',
+    no_warranty: 'No assets with warranty date',
+    logout_title: 'Sign Out',
+    logout_msg: 'Are you sure you want to sign out?',
+    btn_yes_signout: 'Yes, Sign Out',
+    delete_all_title: 'Delete All Assets',
+    delete_user_title: 'حذف المستخدم',
+    btn_yes_delete: 'Yes, Delete',
+    reset_title: 'Reset Password',
+    reset_sub: 'أدخل اسم المستخدم والإيميل لاستلام كلمة مرور جديدة',
+    btn_send_pass: '📧 Send New Password',
+    change_pass_title: 'Change Password',
+    import_drop_title: 'Drag & drop Excel file here or click to browse',
+    import_drop_sub: 'Supports .xlsx, .xls, and .csv — الذكاء الاصطناعي يفهم أي تنسيق',
+    step1: 'Reading file...',
+    step2: 'Analyzing with AI...',
+    step3: 'Previewing results...',
+    total_records: 'Total Records',
+    btn_import_all: '✅ استيراد الكل',
+    btn_warranty_report: '📧 Send Warranty Report',
+    warranty_expired: 'منتهي ❌',
+    warranty_soon: 'يوم ⚠️',
+    warranty_ok: 'يوم متبقي ✅',
+    btn_send_report: '📧 Send Full Report',
+    btn_backup: '💾 Backup',
+    col_dept: 'القسم',
+    col_total: 'الإجمالي',
+    org_name: 'NTSC',
+    org_sub: 'إدارة الأصول التقنية',
+    sys_label: 'نظام إدارة الأصول',
+    user_role: 'Admin',
+  }
+};
+
+let currentLang = localStorage.getItem('ntsc_lang') || 'en';
+
+function t(key){ return TRANSLATIONS[currentLang][key] || TRANSLATIONS['en'][key] || key; }
+
+function setLang(lang){
+  currentLang = lang;
+  localStorage.setItem('ntsc_lang', lang);
+  // Update direction
+  document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  // Update active button
+  const bEn=document.getElementById('btn-en'), bAr=document.getElementById('btn-ar');
+  if(bEn&&bAr){
+    bEn.style.background = lang==='en' ? 'var(--ntsc)' : 'transparent';
+    bEn.style.color = lang==='en' ? '#fff' : 'var(--w70)';
+    bAr.style.background = lang==='ar' ? 'var(--ntsc)' : 'transparent';
+    bAr.style.color = lang==='ar' ? '#fff' : 'var(--w70)';
+  }
+  // Re-render all UI
+  applyLang();
+  renderTable();
+  renderReports();
+  renderWarrantyAlerts();
+  renderWarrantyPanel();
+  renderStats();
+}
+
+function applyLang(){
+  const L = TRANSLATIONS[currentLang];
+  // Sidebar nav
+  setT('nav-assets', L.nav_assets);
+  setT('nav-import', L.nav_import);
+  setT('nav-warranty', L.nav_warranty);
+  setT('nav-reports', L.nav_reports);
+  setT('nav-users', L.nav_users);
+  setT('nav-profile', L.nav_profile);
+  setT('nav-log', L.nav_log);
+  setT('btn-add-sb', L.btn_add_asset);
+  setT('btn-signout', L.btn_signout);
+  setT('sb-org', L.org_name);
+  setT('sb-sub', L.org_sub);
+  setT('sb-syslabel', L.sys_label);
+  const roleEl = document.getElementById('sb-userrole');
+  if(roleEl && !roleEl.textContent.startsWith('@')) roleEl.textContent = L.user_role;
+  // Stats labels
+  setT('stat-lbl-0', L.stat_total);
+  setT('stat-lbl-1', L.stat_assigned);
+  setT('stat-lbl-2', L.stat_available);
+  setT('stat-lbl-3', L.stat_maintenance);
+  setT('stat-lbl-4', L.stat_warranty);
+  // Page titles
+  setT('ph-assets-title', L.page_assets_title);
+  setT('ph-assets-sub', L.page_assets_sub);
+  setT('ph-warranty-title', L.page_warranty_title);
+  setT('ph-reports-title', L.page_reports_title);
+  setT('ph-users-title', L.page_users_title);
+  setT('ph-users-sub', L.page_users_sub);
+  setT('ph-profile-title', L.page_profile_title);
+  setT('ph-profile-sub', L.page_profile_sub);
+  setT('ph-log-title', L.page_log_title);
+  // Toolbar
+  const searchEl = document.getElementById('q');
+  if(searchEl) searchEl.placeholder = '🔍 ' + L.search_placeholder;
+  updateSelect('ft', [L.filter_all_types, L.type_laptop, L.type_monitor, L.type_phone, L.type_printer, L.type_router, L.type_tablet, L.type_other]);
+  updateSelect('fs', [L.filter_all_status, L.status_assigned, L.status_available, L.status_maintenance, L.status_broken]);
+  setT('btn-export-csv', L.btn_export);
+  setT('btn-del-all', L.btn_delete_all);
+  // Table headers
+  setT('th-asset-id', L.th_asset_id);
+  setT('th-type', L.th_type);
+  setT('th-name', L.th_name);
+  setT('th-serial', L.th_serial);
+  setT('th-assigned', L.th_assigned_to);
+  setT('th-dept', L.th_dept);
+  setT('th-status', L.th_status);
+  setT('th-warranty', L.th_warranty);
+  setT('th-actions', L.th_actions);
+  // Modal labels
+  setT('modal-lbl-type', L.lbl_type);
+  setT('modal-lbl-status', L.lbl_status);
+  setT('modal-lbl-name', L.lbl_name);
+  setT('modal-lbl-brand', L.lbl_brand);
+  setT('modal-lbl-serial', L.lbl_serial);
+  setT('modal-lbl-user', L.lbl_user);
+  setT('modal-lbl-dept', L.lbl_dept);
+  setT('modal-lbl-received', L.lbl_received);
+  setT('modal-lbl-warranty', L.lbl_warranty);
+  setT('modal-lbl-notes', L.lbl_notes);
+  setT('modal-section-basic', L.section_basic);
+  setT('modal-section-assign', L.section_assignment);
+  setT('modal-section-notes', L.section_notes);
+  setT('modal-btn-cancel', L.btn_cancel);
+  setT('modal-btn-save', L.btn_save);
+  // User modal
+  setT('u-modal-title', L.modal_add_admin);
+  setT('u-lbl-username', L.lbl_username);
+  setT('u-lbl-fullname', L.lbl_fullname);
+  setT('u-lbl-password', L.lbl_password);
+  setT('u-lbl-email', L.lbl_email);
+  // Profile
+  setT('p-section-account', L.section_account);
+  setT('p-lbl-fullname', L.lbl_fullname);
+  setT('p-lbl-username', L.lbl_username);
+  setT('p-lbl-email', L.lbl_email_short);
+  setT('p-section-pass', L.section_change_pass);
+  setT('p-lbl-old', L.lbl_current_pass);
+  setT('p-lbl-new', L.lbl_new_pass);
+  setT('p-lbl-confirm', L.lbl_confirm_pass);
+  setT('p-btn-save', L.btn_save_changes);
+  // Add admin button
+  setT('btn-add-admin', L.btn_add_admin);
+  // Reports buttons
+  setT('btn-warranty-report', L.btn_warranty_report);
+  setT('btn-send-report', L.btn_send_report);
+  setT('btn-backup-btn', L.btn_backup);
+}
+
+function setT(id, text){
+  const el = document.getElementById(id);
+  if(el) el.textContent = text;
+}
+
+function updateSelect(id, options){
+  const sel = document.getElementById(id);
+  if(!sel) return;
+  const opts = sel.querySelectorAll('option');
+  opts.forEach((opt,i) => { if(options[i]) opt.textContent = options[i]; });
+}
+
+// Initialize lang on page load
+window.addEventListener('load', ()=>{
+  const saved = localStorage.getItem('ntsc_lang') || 'en';
+  if(saved !== currentLang){ currentLang = saved; }
+  document.documentElement.lang = currentLang === 'ar' ? 'ar' : 'en';
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  const btnEn = document.getElementById('btn-en');
+  const btnAr = document.getElementById('btn-ar');
+  if(btnEn) btnEn.classList.toggle('active', currentLang === 'en');
+  if(btnAr) btnAr.classList.toggle('active', currentLang === 'ar');
+  setTimeout(applyLang, 100);
+});
+
+</script>
+</body>
+</html>
