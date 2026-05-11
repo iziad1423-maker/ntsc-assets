@@ -67,9 +67,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;
 
 /* SIDEBAR */
 #app{display:none;position:relative;z-index:1;min-height:100vh}
-.sidebar{position:fixed;top:0;right:0;height:100vh;width:240px;
+.sidebar{position:fixed;top:0;left:0;height:100vh;width:240px;
   background:rgba(10,46,39,0.75);backdrop-filter:blur(30px);
-  border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:100;box-shadow:var(--shadow)}
+  border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;box-shadow:var(--shadow)}
+html[dir="rtl"] .sidebar{left:auto;right:0;border-right:none;border-left:1px solid var(--border)}
 .sb-header{padding:0;border-bottom:1px solid var(--border)}
 .sb-logo-bar{padding:18px 16px 14px;display:flex;align-items:center;gap:12px}
 .sb-title{flex:1;min-width:0}
@@ -104,7 +105,8 @@ html[dir="rtl"] .ni:hover{transform:translateX(2px)}
 .btn-add-sb:hover{transform:translateY(-1px)}
 
 /* MAIN */
-.main{margin-right:240px;padding:26px;min-height:100vh}
+.main{margin-left:240px;padding:26px;min-height:100vh}
+html[dir="rtl"] .main{margin-left:0;margin-right:240px}
 .ph{margin-bottom:22px}
 .ph h1{font-size:21px;font-weight:900;color:var(--white)}
 .ph p{font-size:13px;color:var(--w70);margin-top:3px}
@@ -246,17 +248,15 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 .import-drop-hover:hover{border-color:var(--accent)!important;background:rgba(46,204,113,0.1)!important}
 
 @media(max-width:900px){
-  .sidebar{width:200px}.main{margin-right:200px;padding:14px}
+  .sidebar{width:200px}
+  .main{margin-left:200px;padding:14px}
+  html[dir="rtl"] .main{margin-left:0;margin-right:200px}
   .sg{grid-template-columns:repeat(2,1fr)}.fg2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}
-  html[dir="rtl"] .main{margin-right:0;margin-left:200px}
-  html[dir="rtl"] .sidebar{right:auto;left:0;border-left:none;border-right:1px solid var(--border)}
 }
-@media(min-width:901px){
-  html[dir="rtl"] .main{margin-right:0;margin-left:240px}
-  html[dir="rtl"] .sidebar{right:auto;left:0;border-left:none;border-right:1px solid var(--border)}
-  html[dir="rtl"] th{text-align:right}
-  html[dir="rtl"] .ni{text-align:right}
-}
+html[dir="rtl"] th{text-align:right}
+html[dir="rtl"] .ni{text-align:right}
+html[dir="rtl"] .ni:hover{transform:translateX(2px)}
+html[dir="ltr"] .ni:hover{transform:translateX(2px)}
 </style>
 </head>
 <body>
