@@ -84,10 +84,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;
 .sb-uinfo .urole{font-size:10px;color:var(--accent);margin-top:1px}
 .sb-nav{flex:1;padding:12px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
 .ni{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r2);
-  cursor:pointer;font-size:13px;color:var(--w70);transition:all 0.15s;border:none;
-  background:transparent;font-family:var(--font);width:100%;text-align:right;font-weight:500}
-.ni:hover{background:var(--w08);color:var(--white)}
-.ni.active{background:rgba(26,107,90,0.25);color:var(--accent);font-weight:700;border:1px solid rgba(46,204,113,0.2)}
+  cursor:pointer;font-size:13px;color:var(--w70);transition:background 0.2s,color 0.2s,transform 0.15s;
+  border:none;background:transparent;font-family:var(--font);width:100%;text-align:left;font-weight:500;
+  outline:none;position:relative;overflow:hidden}
+.ni::before{content:'';position:absolute;inset:0;background:rgba(46,204,113,0);
+  transition:background 0.2s;border-radius:var(--r2)}
+.ni:hover{color:var(--white);transform:translateX(-2px)}
+.ni:hover::before{background:rgba(255,255,255,0.06)}
+.ni.active{color:var(--accent);font-weight:700}
+.ni.active::before{background:rgba(26,107,90,0.3)}
+html[dir="rtl"] .ni{text-align:right}
+html[dir="rtl"] .ni:hover{transform:translateX(2px)}
 .ni .ico{font-size:15px;flex-shrink:0}
 .nav-sep{height:1px;background:var(--border);margin:6px 0}
 .sb-foot{padding:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
@@ -936,18 +943,41 @@ async function logAction(op,details){
 
 async function loadLogs(){
   const {data}=await DB.from('asset_logs').select('*').order('created_at',{ascending:false}).limit(80);
-  const icons={Added:'➕',Modified:'✏️',DELETE:'🗑️'};
-  document.getElementById('log-list').innerHTML=data?.length
-    ?data.map(l=>`<div class="log-item">
-        <div class="log-icon">${icons[l.operation]||'📋'}</div>
-        <div class="log-body">
-          <div class="log-det">${l.details}</div>
-          <div class="log-meta">🕐 ${fmtDt(l.created_at)} &nbsp;·&nbsp; 👤 ${l.done_by||'—'}</div>
-        </div></div>`).join('')
-    :'<div class="empty-state"><div class="ei">📜</div><p>No activity yet</p></div>';
+  const opMeta={
+    'Added':    {icon:'➕', color:'rgba(46,204,113,0.15)',  border:'rgba(46,204,113,0.25)',  label:'Added'},
+    'إضافة':   {icon:'➕', color:'rgba(46,204,113,0.15)',  border:'rgba(46,204,113,0.25)',  label:'Added'},
+    'Modified': {icon:'✏️', color:'rgba(52,152,219,0.15)', border:'rgba(52,152,219,0.25)', label:'Modified'},
+    'تعديل':   {icon:'✏️', color:'rgba(52,152,219,0.15)', border:'rgba(52,152,219,0.25)', label:'Modified'},
+    'DELETE':   {icon:'🗑️', color:'rgba(231,76,60,0.12)',  border:'rgba(231,76,60,0.25)',  label:'Deleted'},
+    'حذف':     {icon:'🗑️', color:'rgba(231,76,60,0.12)',  border:'rgba(231,76,60,0.25)',  label:'Deleted'},
+    'حذف الكل':{icon:'⚠️', color:'rgba(231,76,60,0.2)',   border:'rgba(231,76,60,0.4)',   label:'Delete All'},
+    'استيراد': {icon:'📊', color:'rgba(155,89,182,0.15)', border:'rgba(155,89,182,0.25)', label:'Import'},
+    'Imported': {icon:'📊', color:'rgba(155,89,182,0.15)', border:'rgba(155,89,182,0.25)', label:'Import'},
+  };
+  const getM = op => opMeta[op] || {icon:'📋', color:'rgba(255,255,255,0.05)', border:'rgba(255,255,255,0.1)', label:op};
+  document.getElementById('log-list').innerHTML = data?.length
+    ? `<div style="padding:8px">` + data.map(l=>{
+        const m = getM(l.operation);
+        return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;margin-bottom:6px;
+          background:${m.color};border:1px solid ${m.border};border-radius:10px;transition:all 0.15s"
+          onmouseover="this.style.transform='translateX(-2px)'" onmouseout="this.style.transform=''">
+          <div style="width:36px;height:36px;border-radius:10px;background:${m.border};
+            display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${m.icon}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;color:var(--white);font-weight:500;line-height:1.4">${l.details}</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:5px">
+              <span style="font-size:10px;color:var(--w40)">🕐 ${fmtDt(l.created_at)}</span>
+              <span style="font-size:10px;color:var(--w40)">·</span>
+              <span style="font-size:10px;color:var(--accent);font-weight:600">👤 ${l.done_by||'—'}</span>
+            </div>
+          </div>
+          <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;
+            background:${m.border};color:var(--white);flex-shrink:0;margin-top:2px">${m.label}</span>
+        </div>`;
+      }).join('') + `</div>`
+    : `<div class="empty-s"><div class="ei">📜</div><p>${t('no_activity')}</p></div>`;
 }
 
-// ── USERS ──────────────────────────────────────────────────────────────────
 async function loadUsers(){
   const {data}=await DB.from('admins').select('*').order('created_at',{ascending:true});
   document.getElementById('users-list').innerHTML=data?.length
