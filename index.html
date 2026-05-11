@@ -10,16 +10,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-window.EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY'; // ← استبدل هذا بالـ Public Key من EmailJS
+window.EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
 window.addEventListener('load', function(){
   try{
-    if(typeof emailjs !== 'undefined'){
-      if(window.EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
-        console.warn('⚠️ EmailJS: Public Key not configured - emails will not be sent');
-      } else {
-        emailjs.init(window.EMAILJS_PUBLIC_KEY);
-        console.log('✅ EmailJS initialized successfully');
-      }
+    if(typeof emailjs !== 'undefined' && window.EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY'){
+      emailjs.init(window.EMAILJS_PUBLIC_KEY);
     }
   }catch(e){ console.warn('EmailJS init failed:', e.message); }
 });
@@ -413,16 +408,13 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 <body>
 
 <!-- LOADER -->
-<div class="loader" id="loader">
-  <div class="loader-spin"></div>
-  <p>Loading...</p>
-</div>
+<div class="ldr" id="loader"><div class="lspin"></div><p>Loading...</p></div>
 
 <!-- LOGIN -->
 <div id="login-screen" style="display:none">
-  <div class="login-card">
-    <div class="login-logo">
-      <svg width="72" height="82" viewBox="0 0 100 115" fill="none" style="margin:0 auto 14px;display:block;filter:drop-shadow(0 6px 20px rgba(46,204,113,0.25))">
+  <div class="login-wrap">
+    <div class="login-ntsc-header">
+      <svg class="login-shield" width="72" height="82" viewBox="0 0 100 115" fill="none" style="margin:0 auto 14px;display:block;filter:drop-shadow(0 6px 20px rgba(46,204,113,0.25))">
         <path d="M50 4L8 20V58C8 80 26 100 50 111C74 100 92 80 92 58V20L50 4Z" fill="#1a6b5a"/>
         <path d="M50 12L14 26V58C14 77 30 95 50 105C70 95 86 77 86 58V26L50 12Z" fill="#145548"/>
         <line x1="50" y1="80" x2="50" y2="45" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
@@ -432,50 +424,53 @@ tr:hover td{background:rgba(255,255,255,0.025)}
         <path d="M35 82L50 55L65 82" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
       </svg>
       <h1>National Transport Safety Center</h1>
-      <p style="font-size:12px;color:rgba(46,204,113,0.8);margin-top:6px">IT Asset Management System</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-top:3px">National Transport Safety Center — NTSC</p>
+      <p style="font-size:13px;color:rgba(46,204,113,0.85);margin-top:5px">IT Asset Management System</p>
     </div>
-    <div class="login-field">
-      <label>Username</label>
-      <input type="text" id="l-user" placeholder="Enter username" autocomplete="username">
-    </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="btn-login" onclick="doLogin()">الدخول للنظام</button>
-    <div class="login-err" id="login-err"></div>
-    <div style="text-align:center;margin-top:16px">
-      <button class="btn btn-ghost btn-sm" onclick="showSetup()">⚙️ Connection Setup</button>
-        <button class="btn btn-ghost btn-sm" onclick="showResetModal()">🔑 نسيت Password؟</button>
+    <div class="login-card">
+      <div class="lf">
+        <label data-t="lbl_username">Username</label>
+        <input type="text" id="l-user" data-t-ph="lbl_username" placeholder="Username" autocomplete="username">
+      </div>
+      <div class="lf">
+        <label data-t="lbl_password">Password</label>
+        <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn-login" onclick="doLogin()">🔐 <span data-t="btn_signout">Sign In</span></button>
+      <div class="login-err" id="login-err"></div>
+      <div style="text-align:center;margin-top:14px;display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-gh btn-sm" onclick="showSetup()">⚙️ Connection Setup</button>
+        <button class="btn btn-gh btn-sm" onclick="showResetModal()">🔑 <span data-t="reset_title">Reset Password</span></button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- SETUP -->
-<div id="setup-screen">
-  <div class="setup-card">
-    <div style="font-size:28px;margin-bottom:12px">⚙️</div>
-    <h2>Database Connection Setup</h2>
-    <p>أدخل بيانات Supabase مرة واحدة وتُحفظ تلقائياً.</p>
-    <div class="setup-field">
-      <label>Supabase URL</label>
-      <input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" dir="ltr">
+<div id="setup-screen" style="display:none;position:fixed;inset:0;z-index:999;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--ntsc4),var(--ntsc3));padding:20px">
+  <div style="background:var(--glass);backdrop-filter:blur(40px);border:1px solid var(--border2);border-radius:24px;padding:40px;width:500px;max-width:95vw;box-shadow:var(--shadow)">
+    <div style="font-size:26px;margin-bottom:10px">⚙️</div>
+    <h2 style="font-size:18px;font-weight:800;color:var(--accent);margin-bottom:6px">Database Connection Setup</h2>
+    <p style="font-size:12px;color:var(--w70);margin-bottom:24px;line-height:1.8">Enter your Supabase credentials once. They will be saved automatically.</p>
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:11px;font-weight:700;color:var(--w70);margin-bottom:7px;letter-spacing:0.5px">SUPABASE URL</label>
+      <input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" dir="ltr" style="width:100%;padding:11px 14px;background:var(--w08);border:1px solid var(--border);border-radius:var(--r2);color:var(--white);font-family:monospace;font-size:12px;box-sizing:border-box">
     </div>
-    <div class="setup-field">
-      <label>Supabase Anon Key</label>
-      <input type="text" id="sb-key" placeholder="eyJhbGci..." dir="ltr">
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:11px;font-weight:700;color:var(--w70);margin-bottom:7px;letter-spacing:0.5px">SUPABASE ANON KEY</label>
+      <input type="text" id="sb-key" placeholder="eyJhbGci..." dir="ltr" style="width:100%;padding:11px 14px;background:var(--w08);border:1px solid var(--border);border-radius:var(--r2);color:var(--white);font-family:monospace;font-size:12px;box-sizing:border-box">
     </div>
-    <button class="btn-setup" onclick="saveConfig()">✅ Save & Continue</button>
+    <button onclick="saveConfig()" style="width:100%;padding:13px;margin-top:8px;background:linear-gradient(135deg,var(--ntsc),var(--ntsc-light));color:var(--white);border:none;border-radius:var(--r2);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✅ Save & Continue</button>
   </div>
 </div>
 
 <!-- APP -->
-<div id="app">
+<div id="app" style="display:none">
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="sb-logo">
-        <svg width="36" height="42" viewBox="0 0 100 115" fill="none" style="flex-shrink:0">
+    <div class="sb-header">
+      <div class="sb-logo-bar">
+        <svg width="44" height="50" viewBox="0 0 100 115" fill="none" style="flex-shrink:0">
           <path d="M50 4L8 20V58C8 80 26 100 50 111C74 100 92 80 92 58V20L50 4Z" fill="#1a6b5a"/>
           <path d="M50 12L14 26V58C14 77 30 95 50 105C70 95 86 77 86 58V26L50 12Z" fill="#145548"/>
           <rect x="48" y="48" width="4" height="30" rx="2" fill="white"/>
@@ -484,257 +479,310 @@ tr:hover td{background:rgba(255,255,255,0.025)}
           <path d="M50 48C47 41 47 33 50 29C53 33 53 41 50 48Z" fill="white"/>
           <path d="M37 80L50 56L63 80" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
         </svg>
-        <div class="sb-logo-text">
-          <h2 id="sb-org">NTSC</h2>
-          <p id="sb-sub">IT Asset Management</p>
+        <div class="sb-title">
+          <h2 id="sb-org" data-t="org">NTSC</h2>
+          <p id="sb-sub" data-t="org_sub">IT Asset Management</p>
+          <div class="sys-label" id="sb-syslabel" data-t="sys_label">Asset Management System</div>
         </div>
       </div>
-      <div class="sb-user">
-        <div class="sb-user-av">👤</div>
-        <div class="sb-user-info">
-          <div class="name" id="sb-username">—</div>
-          <div class="role" id="sb-userrole" style="font-size:10px;color:var(--accent);margin-top:1px">Admin</div>
+      <div class="sb-divider"></div>
+      <div class="sb-user-box">
+        <div class="sb-av">👤</div>
+        <div class="sb-uinfo">
+          <div class="uname" id="sb-username">—</div>
+          <div class="urole" id="sb-userrole" data-t="user_role">Admin</div>
         </div>
       </div>
     </div>
-    <nav class="sidebar-nav">
+    <nav class="sb-nav">
+      <!-- Language Switcher -->
       <div style="display:flex;margin-bottom:10px;border:1px solid var(--border);border-radius:8px;overflow:hidden">
-        <button id="btn-en" onclick="setLang('en')" style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;background:var(--ntsc);color:#fff;transition:all 0.2s">🌐 EN</button>
-        <button id="btn-ar" onclick="setLang('ar')" style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;background:transparent;color:rgba(255,255,255,0.5);transition:all 0.2s">عربي</button>
+        <button id="btn-en" onclick="setLang('en')" style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--font);background:var(--ntsc);color:#fff;transition:all 0.2s">🌐 EN</button>
+        <button id="btn-ar" onclick="setLang('ar')" style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--font);background:transparent;color:rgba(255,255,255,0.5);transition:all 0.2s">عربي</button>
       </div>
-      <button class="nav-item active" onclick="showPanel('assets',this)"><span class="ni">📋</span> <span data-i18n="nav_assets_text">Assets</span></button>
-      <button class="nav-item" onclick="showPanel('import',this)"><span class="ni">🤖</span> <span data-i18n="nav_import_text">Smart Import</span></button>
-      <button class="nav-item" onclick="showPanel('warranty',this)"><span class="ni">🛡️</span> <span data-i18n="nav_warranty_text">Warranties</span></button>
-      <button class="nav-item" onclick="showPanel('reports',this)"><span class="ni">📊</span> <span data-i18n="nav_reports_text">Reports</span></button>
+      <button class="ni active" onclick="showPanel('assets',this)"><span class="ico">📋</span> <span data-t="nav_assets">Assets</span></button>
+      <button class="ni" onclick="showPanel('import',this)"><span class="ico">🤖</span> <span data-t="nav_import">Smart Import</span></button>
+      <button class="ni" onclick="showPanel('warranty',this)"><span class="ico">🛡️</span> <span data-t="nav_warranty">Warranties</span></button>
+      <button class="ni" onclick="showPanel('reports',this)"><span class="ico">📊</span> <span data-t="nav_reports">Reports</span></button>
       <div class="nav-sep"></div>
-      <button class="nav-item" onclick="showPanel('users',this)"><span class="ni">👥</span> <span data-i18n="nav_users_text">Users</span></button>
-      <button class="nav-item" onclick="showPanel('log',this)"><span class="ni">📜</span> <span data-i18n="nav_log_text">Activity Log</span></button>
+      <button class="ni" onclick="showPanel('users',this)"><span class="ico">👥</span> <span data-t="nav_users">Users</span></button>
+      <button class="ni" onclick="showPanel('profile',this)"><span class="ico">⚙️</span> <span data-t="nav_profile">My Account</span></button>
+      <button class="ni" onclick="showPanel('log',this)"><span class="ico">📜</span> <span data-t="nav_log">Activity Log</span></button>
     </nav>
-    <div class="sidebar-footer">
-      <button class="btn-add-main" onclick="openModal()">+ Add New Asset</button>
-      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="doLogout()">🚪 Sign Out</button>
+    <div class="sb-foot">
+      <button class="btn-add-sb" onclick="openModal()">+ <span data-t="btn_add">Add New Asset</span></button>
+      <button class="btn btn-gh btn-sm" style="width:100%" onclick="doLogout()">🚪 <span data-t="btn_signout">Sign Out</span></button>
     </div>
   </div>
 
   <main class="main">
+    <div id="warranty-alerts"></div>
 
-    <!-- WARRANTY ALERTS (shown on all panels) -->
-    <div id="warranty-alerts" class="warranty-alerts"></div>
-
-    <!-- ASSETS PANEL -->
+    <!-- ASSETS -->
     <div class="panel active" id="panel-assets">
-      <div class="page-header">
-        <h1>📋 Assets</h1>
-        <p>Manage and track all IT assets</p>
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><h1>📋 <span data-t="p_assets">Assets</span></h1><p data-t="p_assets_sub">Manage and track all IT assets</p></div>
       </div>
-      <div class="stats-grid">
-        <div class="stat-card s1"><div class="stat-num" id="s0">0</div><div class="stat-lbl">Total Assets</div><div class="stat-icon">📦</div></div>
-        <div class="stat-card s2"><div class="stat-num" id="s1">0</div><div class="stat-lbl">Assigned</div><div class="stat-icon">👤</div></div>
-        <div class="stat-card s3"><div class="stat-num" id="s2">0</div><div class="stat-lbl">Available</div><div class="stat-icon">✅</div></div>
-        <div class="stat-card s4"><div class="stat-num" id="s3">0</div><div class="stat-lbl">Maintenance</div><div class="stat-icon">🔧</div></div>
-        <div class="stat-card s5"><div class="stat-num" id="s4">0</div><div class="stat-lbl">ضمان قارب الانتهاء</div><div class="stat-icon">⚠️</div></div>
+      <div class="sg">
+        <div class="sc c1"><div class="sn" id="s0">0</div><div class="sl" data-t="s_total">Total Assets</div><div class="si">📦</div></div>
+        <div class="sc c2"><div class="sn" id="s1">0</div><div class="sl" data-t="s_assigned">Assigned</div><div class="si">👤</div></div>
+        <div class="sc c3"><div class="sn" id="s2">0</div><div class="sl" data-t="s_available">Available</div><div class="si">✅</div></div>
+        <div class="sc c4"><div class="sn" id="s3">0</div><div class="sl" data-t="s_maintenance">Maintenance</div><div class="si">🔧</div></div>
+        <div class="sc c5"><div class="sn" id="s4">0</div><div class="sl" data-t="s_warranty">Warranty Expiring</div><div class="si">⚠️</div></div>
       </div>
-      <div class="glass-card">
-        <div class="toolbar">
-          <input class="search-inp" type="text" id="q" placeholder="🔍 ابحث بالاسم أو Serial Number أو الموظف..." oninput="renderTable()">
+      <div class="gc">
+        <div class="tb">
+          <input class="si-box" type="text" id="q" placeholder="🔍 Search..." oninput="renderTable()">
           <select class="sel" id="ft" onchange="renderTable()">
-            <option value="">All Types</option>
-            <option>Laptop</option><option>Monitor</option><option>Phone</option>
-            <option>Printer</option><option>Router</option><option>Tablet</option><option>Other</option>
+            <option value="" data-t="all_types">All Types</option>
+            <option data-t="t_laptop">Laptop</option>
+            <option data-t="t_monitor">Monitor</option>
+            <option data-t="t_phone">Phone</option>
+            <option data-t="t_printer">Printer</option>
+            <option data-t="t_router">Router</option>
+            <option data-t="t_tablet">Tablet</option>
+            <option data-t="t_other">Other</option>
           </select>
           <select class="sel" id="fs" onchange="renderTable()">
-            <option value="">All Statuses</option>
-            <option>Assigned</option><option>Available</option><option>Maintenance</option><option>Out of Service</option>
+            <option value="" data-t="all_status">All Statuses</option>
+            <option data-t="s_ass">Assigned</option>
+            <option data-t="s_avail">Available</option>
+            <option data-t="s_maint">Maintenance</option>
+            <option data-t="s_broken">Out of Service</option>
           </select>
-          <button class="btn btn-ghost btn-sm" onclick="loadAssets()">🔄</button>
-          <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><span data-i18n="btn_export">⬇ Export</span> CSV</button>
-          <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);color:#ec7063;border:1px solid rgba(231,76,60,0.2)" onclick="deleteAllAssets()">🗑️ <span data-i18n="btn_delete_all_text">Delete All</span></button>
+          <button class="btn btn-gh btn-sm" onclick="loadAssets()">🔄</button>
+          <button class="btn btn-gh btn-sm" onclick="exportCSV()"><span data-t="btn_export">⬇ Export</span></button>
+          <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);color:#ec7063;border:1px solid rgba(231,76,60,0.2)" onclick="deleteAllAssets()">🗑️ <span data-t="btn_del_all">Delete All</span></button>
         </div>
         <div style="overflow-x:auto">
-          <table>
-            <thead><tr>
-              <th data-i18n="th_asset_id">Asset ID</th><th data-i18n="th_type">Type</th><th data-i18n="th_name">Name / Model</th>
-              <th data-i18n="th_serial">Serial Number</th><th>الAssigned إليه</th><th>Department</th>
-              <th data-i18n="th_status">Status</th><th data-i18n="th_warranty">Warranty</th><th data-i18n="th_actions">Actions</th>
-            </tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
+          <table><thead><tr>
+            <th data-t="th_id">Asset ID</th>
+            <th data-t="th_type">Type</th>
+            <th data-t="th_name">Name / Model</th>
+            <th data-t="th_serial">Serial Number</th>
+            <th data-t="th_assigned">Assigned To</th>
+            <th data-t="th_dept">Department</th>
+            <th data-t="th_status">Status</th>
+            <th data-t="th_warranty">Warranty</th>
+            <th data-t="th_actions">Actions</th>
+          </tr></thead><tbody id="tbody"></tbody></table>
         </div>
       </div>
     </div>
 
-    <!-- WARRANTY PANEL -->
-    <div class="panel" id="panel-warranty">
-      <div class="page-header">
-        <h1>🛡️ إدارة Warranties</h1>
-        <p><span data-i18n="page_warranty_sub">Track asset warranty expiration dates</span></p>
-      </div>
-      <div class="glass-card">
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr>
-              <th data-i18n="th_asset_id">Asset ID</th><th data-i18n="th_name_short">Name</th><th data-i18n="th_type">Type</th><th>الAssigned إليه</th>
-              <th>Received Date</th><th>انتهاء Warranty</th><th>Status</th><th>Actions</th>
-            </tr></thead>
-            <tbody id="warranty-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- REPORTS PANEL -->
-    <div class="panel" id="panel-reports">
-      <div class="page-header"><h1>📊 <span data-i18n="page_reports_text">Reports</span></h1></div>
-      <div class="rpt-grid" id="rpt-grid"></div>
-      <div class="glass-card">
-        <table>
-          <thead><tr><th data-i18n="th_dept">Department</th><th data-i18n="col_total">Total</th><th data-i18n="th_assigned_text">Assigned</th><th data-i18n="th_available_text">Available</th><th data-i18n="th_maintenance_text">Maintenance</th></tr></thead>
-          <tbody id="dept-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- USERS PANEL -->
-    <div class="panel" id="panel-users">
-      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div><h1>👥 <span data-i18n="page_users_text">Users</span></h1><p data-i18n="page_users_sub">Manage admin accounts</p></div>
-        <button class="btn btn-green" onclick="openUserModal()"><span data-i18n="btn_add_admin">+ Add Admin</span></button>
-      </div>
-      <div id="users-list"></div>
-    </div>
-
-    <!-- LOG PANEL -->
-    <div class="panel" id="panel-log">
-      <div class="page-header"><h1>📜 <span data-i18n="page_log_text">Activity Log</span></h1></div>
-      <div class="glass-card" id="log-list"></div>
-    </div>
-
-
-    <!-- AI IMPORT PANEL -->
+    <!-- IMPORT -->
     <div class="panel" id="panel-import">
-      <div class="page-header">
-        <h1>🤖 AI-Powered Excel Import</h1>
-        <p>ارفع ملف Excel أو CSV وسيتم تحليله تلقائياً وAdded جميع الأصول للنظام</p>
+      <div class="ph">
+        <h1>🤖 <span data-t="p_import">AI-Powered Smart Import</span></h1>
+        <p data-t="p_import_sub">Upload any Excel or CSV — AI analyzes and imports assets automatically</p>
       </div>
-      <div class="glass-card" style="padding:24px;margin-bottom:16px">
+      <div class="gc" style="padding:24px;margin-bottom:16px">
         <div id="import-drop" onclick="document.getElementById('file-inp').click()"
           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
           ondragleave="this.style.borderColor=''"
           ondrop="handleDrop(event)"
-          style="border:2px dashed rgba(46,204,113,0.3);border-radius:12px;padding:48px 20px;
-          text-align:center;cursor:pointer;background:rgba(46,204,113,0.04);transition:all 0.2s">
+          style="border:2px dashed rgba(46,204,113,0.3);border-radius:12px;padding:48px 20px;text-align:center;cursor:pointer;background:rgba(46,204,113,0.04);transition:all 0.2s">
           <div style="font-size:48px;margin-bottom:14px">📊</div>
-          <h3 style="font-size:16px;font-weight:700;margin-bottom:8px"><span data-i18n="import_drop_title">Drag & drop Excel file here or click to browse</span></h3>
-          <p style="font-size:13px;color:var(--text2);line-height:1.7"><span data-i18n="import_supports">Supports .xlsx, .xls, and .csv</span><br>
-          AI understands any format and classifies assets automatically</p>
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:8px" data-t="drop_title">Drag & drop Excel file here or click to browse</h3>
+          <p style="font-size:13px;color:var(--w70);line-height:1.7">
+            <span data-t="drop_sup">Supports .xlsx, .xls, and .csv</span><br>
+            <span data-t="drop_ai">AI understands any format and classifies assets automatically</span>
+          </p>
           <input type="file" id="file-inp" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(event)">
         </div>
         <div id="import-progress" style="display:none;padding:16px 0">
           <div id="step1" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;font-size:13px">
-            <span id="s1i">📂</span><span><span data-i18n="step1">Reading file...</span></span></div>
+            <span id="s1i">📂</span><span data-t="step1">Reading file...</span></div>
           <div id="step2" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;font-size:13px">
-            <span id="s2i">🤖</span><span><span data-i18n="step2">Analyzing with AI...</span></span></div>
+            <span id="s2i">🤖</span><span data-t="step2">Analyzing with AI...</span></div>
           <div id="step3" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:13px">
-            <span id="s3i">👁️</span><span><span data-i18n="step3">Previewing results...</span></span></div>
+            <span id="s3i">👁️</span><span data-t="step3">Previewing results...</span></div>
         </div>
         <div id="import-preview" style="display:none">
           <div id="import-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px"></div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;margin-bottom:10px">
-            <h3 style="font-size:14px;font-weight:700"><span data-i18n="preview_title">Data Preview</span></h3>
+            <h3 style="font-size:14px;font-weight:700" data-t="preview_title">Data Preview</h3>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost btn-sm" onclick="resetImport()"><span data-i18n="btn_cancel">↩ Cancel</span></button>
-              <button class="btn btn-primary" id="confirm-btn" onclick="confirmImport()"><span data-i18n="btn_import_all">✅ Import All</span></button>
+              <button class="btn btn-gh btn-sm" onclick="resetImport()" data-t="btn_reset_import">↩ Cancel</button>
+              <button class="btn btn-g" id="confirm-btn" onclick="confirmImport()"><span data-t="btn_import">✅ Import All</span></button>
             </div>
           </div>
-          <div style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;max-height:320px;overflow-y:auto">
+          <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--r2);max-height:320px;overflow-y:auto">
             <table><thead><tr>
-              <th data-i18n="th_type">Type</th><th data-i18n="th_name_short">Name</th><th>Brand</th><th data-i18n="th_serial">Serial Number</th>
-              <th>المستخدم</th><th>Department</th><th>Status</th><th>Warranty</th>
+              <th data-t="th_type">Type</th>
+              <th data-t="th_name">Name</th>
+              <th data-t="lbl_brand">Brand</th>
+              <th data-t="th_serial">Serial</th>
+              <th data-t="th_assigned">Assigned To</th>
+              <th data-t="th_dept">Department</th>
+              <th data-t="th_status">Status</th>
+              <th data-t="th_warranty">Warranty</th>
             </tr></thead><tbody id="preview-tbody"></tbody></table>
           </div>
         </div>
       </div>
-      <div class="glass-card" style="padding:20px">
-        <h3 style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:14px">كيف يعمل؟</h3>
+      <div class="gc" style="padding:20px">
+        <h3 style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:14px">How it works</h3>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
           <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
             <div style="font-size:24px;margin-bottom:8px">📂</div>
-            <div style="font-size:12px;font-weight:700;margin-bottom:4px"><span data-i18n="card_upload_title">Upload Any File</span></div>
-            <div style="font-size:11px;color:var(--text2)">Any Excel format — any column names</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px" data-t="card1_t">Upload Any File</div>
+            <div style="font-size:11px;color:var(--w70)" data-t="card1_s">Any Excel — any columns or format</div>
           </div>
           <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
             <div style="font-size:24px;margin-bottom:8px">🤖</div>
-            <div style="font-size:12px;font-weight:700;margin-bottom:4px"><span data-i18n="card_ai_title">AI Analyzes</span></div>
-            <div style="font-size:11px;color:var(--text2)">Understands columns and classifies each asset automatically</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px" data-t="card2_t">AI Analyzes</div>
+            <div style="font-size:11px;color:var(--w70)" data-t="card2_s">Auto-detects and classifies assets</div>
           </div>
           <div style="padding:14px;background:rgba(255,255,255,0.05);border-radius:10px">
             <div style="font-size:24px;margin-bottom:8px">✅</div>
-            <div style="font-size:12px;font-weight:700;margin-bottom:4px"><span data-i18n="card_review_title">Review & Import</span></div>
-            <div style="font-size:11px;color:var(--text2)">شوف المعاينة واضغط Imported — يضاف كل شيء فوراً</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px" data-t="card3_t">Review & Import</div>
+            <div style="font-size:11px;color:var(--w70)" data-t="card3_s">Preview results then click Import</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- PROFILE PANEL -->
+    <!-- WARRANTY -->
+    <div class="panel" id="panel-warranty">
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h1>🛡️ <span data-t="p_warranty">Warranties</span></h1>
+          <p data-t="p_warranty_sub">Track asset warranty expiration dates</p>
+        </div>
+        <button class="btn btn-g btn-sm" onclick="sendWarrantyAlerts()" data-t="btn_war_rep">📧 Send Warranty Report</button>
+      </div>
+      <div class="gc"><div style="overflow-x:auto">
+        <table><thead><tr>
+          <th data-t="th_id">Asset ID</th>
+          <th data-t="th_name">Name</th>
+          <th data-t="th_type">Type</th>
+          <th data-t="th_assigned">Assigned To</th>
+          <th data-t="th_received">Received</th>
+          <th data-t="th_wend">Warranty End</th>
+          <th data-t="th_status">Status</th>
+          <th data-t="th_actions">Actions</th>
+        </tr></thead><tbody id="warranty-tbody"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="panel" id="panel-reports">
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:center">
+        <h1>📊 <span data-t="p_reports">Reports</span></h1>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-g btn-sm" onclick="exportAndEmailAllAssets()" data-t="btn_full_rep">📧 Send Full Report</button>
+          <button class="btn btn-gh btn-sm" onclick="autoBackupCSV()" data-t="btn_backup">💾 Backup</button>
+        </div>
+      </div>
+      <div class="rg" id="rpt-grid"></div>
+      <div class="gc"><table>
+        <thead><tr>
+          <th data-t="th_dept">Department</th>
+          <th data-t="col_total">Total</th>
+          <th data-t="col_assigned">Assigned</th>
+          <th data-t="col_available">Available</th>
+          <th data-t="col_maint">Maintenance</th>
+        </tr></thead>
+        <tbody id="dept-tbody"></tbody>
+      </table></div>
+    </div>
+
+    <!-- USERS -->
+    <div class="panel" id="panel-users">
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><h1>👥 <span data-t="p_users">Users</span></h1><p data-t="p_users_sub">Manage admin accounts</p></div>
+        <button class="btn btn-g" onclick="openUserModal()"><span data-t="btn_add_admin">+ Add Admin</span></button>
+      </div>
+      <div id="users-list"></div>
+    </div>
+
+    <!-- PROFILE -->
     <div class="panel" id="panel-profile">
-      <div class="page-header"><h1>⚙️ Account Settings</h1><p>Update login information</p></div>
-      <div class="glass-card" style="max-width:460px;padding:28px">
-        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">Account Information</div>
-        <div class="fg" style="margin-bottom:13px"><label>Full Name</label><input type="text" id="p-fullname" placeholder="Full Name"></div>
-        <div class="fg" style="margin-bottom:13px"><label>Username</label><input type="text" id="p-username" placeholder="username"></div>
-        <div class="fg" style="margin-bottom:13px"><label>Email</label><input type="email" id="p-email" placeholder="email@ntsc.gov.sa"></div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin:20px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--border)">تغيير Password</div>
-        <div class="fg" style="margin-bottom:13px"><label>Password الحالية</label><input type="password" id="p-old" placeholder="••••••••"></div>
-        <div class="fg" style="margin-bottom:13px"><label>Password الجديدة (6 أحرف على الأقل)</label><input type="password" id="p-new" placeholder="••••••••"></div>
-        <div class="fg" style="margin-bottom:20px"><label>تأكيد Password الجديدة</label><input type="password" id="p-confirm" placeholder="••••••••"></div>
-        <button class="btn btn-primary" onclick="saveProfile()" style="width:100%">💾 Save التغييرات</button>
+      <div class="ph"><h1>⚙️ <span data-t="p_profile">Account Settings</span></h1><p data-t="p_profile_sub">Update your login information</p></div>
+      <div class="gc" style="max-width:460px;padding:28px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)" data-t="sec_account">Account Info</div>
+        <div class="fg" style="margin-bottom:13px"><label data-t="lbl_fullname">Full Name</label><input type="text" id="p-fullname" placeholder="Full name"></div>
+        <div class="fg" style="margin-bottom:13px"><label data-t="lbl_username">Username</label><input type="text" id="p-username" placeholder="username"></div>
+        <div class="fg" style="margin-bottom:13px"><label data-t="lbl_email_sh">Email</label><input type="email" id="p-email" placeholder="email@ntsc.gov.sa"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin:20px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--border)" data-t="sec_pass">Change Password</div>
+        <div class="fg" style="margin-bottom:13px"><label data-t="lbl_cur_pass">Current Password</label><input type="password" id="p-old" placeholder="••••••••"></div>
+        <div class="fg" style="margin-bottom:13px"><label data-t="lbl_new_pass">New Password</label><input type="password" id="p-new" placeholder="••••••••"></div>
+        <div class="fg" style="margin-bottom:20px"><label data-t="lbl_confirm">Confirm Password</label><input type="password" id="p-confirm" placeholder="••••••••"></div>
+        <button class="btn btn-g" onclick="saveProfileNew()" style="width:100%" data-t="btn_save_ch">💾 Save Changes</button>
         <div id="profile-msg" style="margin-top:12px;font-size:13px;text-align:center;min-height:18px"></div>
       </div>
     </div>
 
+    <!-- LOG -->
+    <div class="panel" id="panel-log">
+      <div class="ph"><h1>📜 <span data-t="p_log">Activity Log</span></h1></div>
+      <div class="gc" id="log-list"></div>
+    </div>
   </main>
 </div>
 
-<!-- DELETE ALL MODAL -->
-<div class="ov" id="delete-all-ov" style="z-index:9999;position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)">
-  <div class="modal" style="max-width:440px;text-align:center">
-    <div style="font-size:48px;margin-bottom:12px">⚠️</div>
-    <h2 style="color:#ec7063;margin-bottom:10px"><span data-i18n="delete_all_title">Delete All Assets</span></h2>
-    <p style="font-size:13px;color:var(--w70);margin-bottom:20px;line-height:1.8">
-      This will permanently delete <strong id="delete-count" style="color:#ec7063;font-size:16px">0</strong> assets..<br>
-      This action <strong>cannot be undone</strong>.
-    </p>
-    <div style="background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:10px;padding:16px;margin-bottom:20px">
-      <label style="font-size:12px;color:var(--w70);display:block;margin-bottom:8px">To confirm, type the word <strong style="color:#ec7063">DELETE</strong> في المربع:</label>
-      <input id="delete-confirm-inp" type="text" placeholder="اكتب: DELETE"
-        style="width:100%;padding:10px 14px;background:var(--w08);border:1px solid rgba(231,76,60,0.3);border-radius:8px;color:#fff;font-family:var(--font);font-size:14px;text-align:center"
-        oninput="document.getElementById('delete-confirm-btn').disabled=this.value!=='DELETE'">
+<!-- ASSET MODAL -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <h2 id="modal-title" data-t="m_add">Add New Asset</h2>
+    <div class="ms"><div class="ms-title" data-t="sec_basic">Basic Information</div>
+      <div class="fg2">
+        <div class="fg"><label data-t="lbl_type">Type *</label>
+          <select id="f-type">
+            <option data-t="t_laptop">Laptop</option>
+            <option data-t="t_monitor">Monitor</option>
+            <option data-t="t_phone">Phone</option>
+            <option data-t="t_printer">Printer</option>
+            <option data-t="t_router">Router</option>
+            <option data-t="t_tablet">Tablet</option>
+            <option data-t="t_other">Other</option>
+          </select>
+        </div>
+        <div class="fg"><label data-t="lbl_status">Status *</label>
+          <select id="f-status">
+            <option value="Assigned" data-t="s_ass">Assigned</option>
+            <option value="Available" data-t="s_avail">Available</option>
+            <option value="Maintenance" data-t="s_maint">Maintenance</option>
+            <option value="Out of Service" data-t="s_broken">Out of Service</option>
+          </select>
+        </div>
+        <div class="fg full"><label data-t="lbl_name">Name / Model *</label><input id="f-name" placeholder="e.g. Dell Latitude 5540"></div>
+        <div class="fg"><label data-t="lbl_brand">Brand</label><input id="f-brand" placeholder="Dell / HP / Apple"></div>
+        <div class="fg"><label data-t="lbl_serial">Serial Number</label><input id="f-serial" placeholder="SN-XXXXXXXX"></div>
+      </div>
     </div>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-gh" onclick="const d=document.getElementById('delete-all-ov');d.style.display='none';d.classList.remove('open');document.getElementById('delete-confirm-inp').value='';document.getElementById('delete-confirm-btn').disabled=true"><span data-i18n="btn_cancel">Cancel</span></button>
-      <button id="delete-confirm-btn" class="btn" disabled
-        style="background:#e74c3c;color:#fff;opacity:0.5;cursor:not-allowed"
-        onclick="executeDeleteAll()"
-        onmouseover="if(!this.disabled)this.style.opacity='0.85'"
-        onmouseout="if(!this.disabled)this.style.opacity='1'">🗑️ تأكيد الDELETE</button>
+    <div class="ms"><div class="ms-title" data-t="sec_assign">Assignment & Warranty</div>
+      <div class="fg2">
+        <div class="fg"><label data-t="lbl_user">Assigned To</label><input id="f-user" placeholder="Employee name"></div>
+        <div class="fg"><label data-t="lbl_dept">Department</label><input id="f-dept" placeholder="Department name"></div>
+        <div class="fg"><label data-t="lbl_received">Received Date</label><input id="f-date" type="date"></div>
+        <div class="fg"><label data-t="lbl_warranty">Warranty End</label><input id="f-warranty" type="date"></div>
+      </div>
+    </div>
+    <div class="ms"><div class="ms-title" data-t="sec_notes">Notes</div>
+      <div class="fg"><textarea id="f-notes" placeholder="Additional notes..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-gh" onclick="closeModal()" data-t="btn_cancel">Cancel</button>
+      <button class="btn btn-g" id="save-btn" onclick="saveAsset()" data-t="btn_save">💾 Save</button>
     </div>
   </div>
 </div>
 
-
-<!-- SINGLE DELETE MODAL -->
-<div class="ov" id="single-delete-ov" style="z-index:9999;position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)">
-  <div class="modal" style="max-width:380px;text-align:center">
-    <div style="font-size:40px;margin-bottom:12px">🗑️</div>
-    <h2 style="margin-bottom:8px">DELETE الأصل</h2>
-    <p style="font-size:13px;color:var(--w70);margin-bottom:20px;line-height:1.8">
-      هل تريد DELETE:<br>
-      <strong id="single-delete-name" style="color:#fff;font-size:15px"></strong>
-    </p>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-gh" onclick="const shide=document.getElementById('single-delete-ov');shide.style.display='none';shide.classList.remove('open')"><span data-i18n="btn_cancel">Cancel</span></button>
-      <button class="btn btn-d" id="single-delete-btn" onclick="confirmSingleDelete()">🗑️ نعم، اDELETE</button>
+<!-- USER MODAL -->
+<div class="ov" id="uov">
+  <div class="modal" style="max-width:420px">
+    <h2 data-t="m_add_admin">Add New Admin</h2>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="fg"><label data-t="lbl_username">Username *</label><input id="u-username" placeholder="username"></div>
+      <div class="fg"><label data-t="lbl_fullname">Full Name</label><input id="u-fullname" placeholder="Full name"></div>
+      <div class="fg"><label data-t="lbl_password">Password *</label><input id="u-pass" type="password" placeholder="••••••••"></div>
+      <div class="fg"><label data-t="lbl_email">📧 Email (for notifications)</label><input id="u-email" type="email" placeholder="email@ntsc.gov.sa"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-gh" onclick="closeUov()" data-t="btn_cancel">Cancel</button>
+      <button class="btn btn-g" onclick="saveUserNew()" data-t="btn_save">💾 Save</button>
     </div>
   </div>
 </div>
@@ -742,17 +790,31 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 <!-- EDIT USER MODAL -->
 <div class="ov" id="edit-user-ov" style="z-index:9999;position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)">
   <div class="modal" style="max-width:420px">
-    <h2>✏️ Edit بيانات المستخدم</h2>
+    <h2 data-t="edit_user_title">✏️ Edit User</h2>
     <input type="hidden" id="eu-id">
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="fg"><label>Username *</label><input id="eu-username" placeholder="username"></div>
-      <div class="fg"><label>Full Name</label><input id="eu-fullname" placeholder="Full Name"></div>
-      <div class="fg"><label>📧 Email</label><input id="eu-email" type="email" placeholder="name@ntsc.gov.sa"></div>
-      <div class="fg"><label>كلمة مرور جديدة (اتركها فارغة إذا ما تبي تغيرها)</label><input id="eu-pass" type="password" placeholder="••••••••"></div>
+      <div class="fg"><label data-t="lbl_username">Username *</label><input id="eu-username" placeholder="username"></div>
+      <div class="fg"><label data-t="lbl_fullname">Full Name</label><input id="eu-fullname" placeholder="Full name"></div>
+      <div class="fg"><label data-t="lbl_email_sh">Email</label><input id="eu-email" type="email" placeholder="email@ntsc.gov.sa"></div>
+      <div class="fg"><label>New Password (leave blank to keep)</label><input id="eu-pass" type="password" placeholder="••••••••"></div>
     </div>
     <div class="mf">
-      <button class="btn btn-gh" onclick="closeEditUserModal()"><span data-i18n="btn_cancel">Cancel</span></button>
-      <button class="btn btn-g" onclick="saveEditUser()">💾 Save الModifiedات</button>
+      <button class="btn btn-gh" onclick="closeEditUserModal()" data-t="btn_cancel">Cancel</button>
+      <button class="btn btn-g" onclick="saveEditUser()" data-t="btn_save">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="ov" id="qov">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <h2>QR Code</h2>
+    <div class="qa" id="qr-name"></div>
+    <div class="qi" id="qr-id"></div>
+    <div id="qr-container"></div>
+    <div class="mf" style="justify-content:center">
+      <button class="btn btn-gh" onclick="closeQ()" data-t="btn_cancel">Cancel</button>
+      <button class="btn btn-g" onclick="printQR()">🖨️ Print</button>
     </div>
   </div>
 </div>
@@ -761,17 +823,56 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 <div id="logout-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px)">
   <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(46,204,113,0.3);border-radius:20px;padding:36px 32px;width:360px;max-width:95vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
     <div style="font-size:48px;margin-bottom:14px">👋</div>
-    <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff"><span data-i18n="logout_title">Sign Out</span></h2>
-    <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px">Are you sure you want to sign out?</p>
+    <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff" data-t="logout_title">Sign Out</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px" data-t="logout_msg">Are you sure you want to sign out?</p>
     <div style="display:flex;gap:10px;justify-content:center">
       <button onclick="document.getElementById('logout-modal').style.display='none'"
-        style="padding:10px 24px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
-        Cancel
-      </button>
+        style="padding:10px 24px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer" data-t="btn_cancel">Cancel</button>
       <button onclick="confirmLogout()"
-        style="padding:10px 24px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a6b5a,#2ecc71);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
-        Yes, Sign Out
-      </button>
+        style="padding:10px 24px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--ntsc),var(--ntsc-light));color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer" data-t="btn_yes_out">Yes, Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE ALL MODAL -->
+<div id="delete-all-ov" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px)">
+  <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(231,76,60,0.3);border-radius:20px;padding:36px 32px;width:420px;max-width:95vw;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
+    <input type="hidden" id="del-user-id">
+    <div style="font-size:48px;margin-bottom:12px">⚠️</div>
+    <h2 style="color:#ec7063;margin-bottom:10px" data-t="del_all_title">Delete All Assets</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:20px;line-height:1.8">
+      This will permanently delete <strong id="delete-count" style="color:#ec7063;font-size:16px">0</strong> assets.
+    </p>
+    <div style="background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:10px;padding:16px;margin-bottom:20px">
+      <label style="font-size:12px;color:var(--w70);display:block;margin-bottom:8px"><span data-t="del_confirm_msg">To confirm, type</span> <strong style="color:#ec7063" data-t="del_confirm_word">DELETE</strong></label>
+      <input id="delete-confirm-inp" type="text" placeholder="Type: DELETE"
+        style="width:100%;padding:10px 14px;background:var(--w08);border:1px solid rgba(231,76,60,0.3);border-radius:8px;color:#fff;font-family:var(--font);font-size:14px;text-align:center;box-sizing:border-box"
+        oninput="document.getElementById('delete-confirm-btn').disabled=this.value!==t('del_confirm_word')">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="const d=document.getElementById('delete-all-ov');d.style.display='none';document.getElementById('delete-confirm-inp').value='';document.getElementById('delete-confirm-btn').disabled=true"
+        style="padding:11px 26px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer" data-t="btn_cancel">Cancel</button>
+      <button id="delete-confirm-btn" disabled onclick="executeDeleteAll()"
+        style="padding:11px 26px;border-radius:10px;border:none;background:#e74c3c;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;opacity:0.35" data-t="btn_confirm_del">Confirm Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- SINGLE DELETE MODAL -->
+<div id="single-delete-ov" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px)">
+  <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(231,76,60,0.3);border-radius:20px;padding:36px 32px;width:380px;max-width:95vw;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
+    <input type="hidden" id="del-asset-id">
+    <div style="font-size:40px;margin-bottom:12px">🗑️</div>
+    <h2 style="margin-bottom:8px" data-t="del_title">Delete Asset</h2>
+    <p style="font-size:13px;color:var(--w70);margin-bottom:20px;line-height:1.8">
+      <span data-t="del_msg">Delete:</span><br>
+      <strong id="single-delete-name" style="color:#fff;font-size:15px"></strong>
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="const s=document.getElementById('single-delete-ov');s.style.display='none'"
+        style="padding:11px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer" data-t="btn_cancel">Cancel</button>
+      <button onclick="confirmSingleDelete()"
+        style="padding:11px 22px;border-radius:10px;border:none;background:#e74c3c;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer" data-t="btn_yes_del">Yes, Delete</button>
     </div>
   </div>
 </div>
@@ -781,20 +882,16 @@ tr:hover td{background:rgba(255,255,255,0.025)}
   <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(231,76,60,0.3);border-radius:20px;padding:36px 32px;width:380px;max-width:95vw;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
     <input type="hidden" id="del-user-id">
     <div style="font-size:48px;margin-bottom:14px">🗑️</div>
-    <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff">DELETE المستخدم</h2>
+    <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff" data-t="del_title">Delete User</h2>
     <p style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:24px;line-height:1.8">
-      هل تريد DELETE المستخدم<br>
-      <strong id="del-user-name" style="color:#ec7063;font-size:15px"></strong> ؟
+      <span data-t="del_msg">Delete:</span><br>
+      <strong id="del-user-name" style="color:#ec7063;font-size:15px"></strong>
     </p>
     <div style="display:flex;gap:10px;justify-content:center">
       <button onclick="document.getElementById('del-user-modal').style.display='none'"
-        style="padding:11px 26px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
-        Cancel
-      </button>
+        style="padding:11px 26px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer" data-t="btn_cancel">Cancel</button>
       <button onclick="confirmDeleteUser()"
-        style="padding:11px 26px;border-radius:10px;border:none;background:#e74c3c;color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
-        🗑️ نعم، اDELETE
-      </button>
+        style="padding:11px 26px;border-radius:10px;border:none;background:#e74c3c;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer" data-t="btn_yes_del">Yes, Delete</button>
     </div>
   </div>
 </div>
@@ -804,136 +901,53 @@ tr:hover td{background:rgba(255,255,255,0.025)}
   <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(46,204,113,0.3);border-radius:20px;padding:36px 32px;width:420px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:44px;margin-bottom:12px">🔑</div>
-      <h2 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">استعادة Password</h2>
-      <p style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7">Enter username والإيميل المرتبط بالحساب<br>A new password will be sent to you.</p>
+      <h2 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px" data-t="reset_title">Reset Password</h2>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7" data-t="reset_sub">Enter your username and email to receive a new password.</p>
     </div>
     <div style="margin-bottom:14px">
-      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px">Username</label>
-      <input id="reset-username" type="text" placeholder="username"
-        style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box">
+      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px" data-t="lbl_username">Username</label>
+      <input id="reset-username" type="text" placeholder="username" style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:var(--font);font-size:13px;box-sizing:border-box">
     </div>
     <div style="margin-bottom:20px">
-      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px">Email</label>
-      <input id="reset-email" type="email" placeholder="email@ntsc.gov.sa"
-        style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box">
+      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px" data-t="lbl_email_sh">Email</label>
+      <input id="reset-email" type="email" placeholder="email@ntsc.gov.sa" style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:var(--font);font-size:13px;box-sizing:border-box">
     </div>
     <div id="reset-msg" style="min-height:18px;font-size:12px;text-align:center;margin-bottom:14px"></div>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button onclick="closeResetModal()"
-        style="padding:11px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
-        Cancel
-      </button>
-      <button onclick="doResetPassword()"
-        style="padding:11px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a6b5a,#2ecc71);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
-        📧 إرسال Password
-      </button>
+      <button onclick="closeResetModal()" style="padding:11px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer" data-t="btn_cancel">Cancel</button>
+      <button onclick="doResetPassword()" style="padding:11px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--ntsc),var(--ntsc-light));color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer" data-t="btn_send_pass">📧 Send New Password</button>
     </div>
   </div>
 </div>
 
-<!-- RESET PASSWORD FROM USERS PANEL MODAL -->
+<!-- RESET USER PASS MODAL -->
 <div id="reset-user-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px)">
   <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(46,204,113,0.3);border-radius:20px;padding:36px 32px;width:400px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
     <input type="hidden" id="rsu-id">
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:40px;margin-bottom:10px">🔐</div>
-      <h2 style="font-size:17px;font-weight:800;color:#fff;margin-bottom:4px">تغيير Password</h2>
+      <h2 style="font-size:17px;font-weight:800;color:#fff;margin-bottom:4px" data-t="change_pass">Change Password</h2>
       <p id="rsu-name" style="font-size:13px;color:rgba(46,204,113,0.9);margin:0"></p>
     </div>
     <div style="margin-bottom:14px">
-      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px">Password الجديدة</label>
-      <input id="rsu-pass" type="password" placeholder="••••••••"
-        style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box">
+      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px" data-t="lbl_new_pass">New Password</label>
+      <input id="rsu-pass" type="password" placeholder="••••••••" style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:var(--font);font-size:13px;box-sizing:border-box">
     </div>
     <div style="margin-bottom:20px">
-      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px">تأكيد Password</label>
-      <input id="rsu-confirm" type="password" placeholder="••••••••"
-        style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box">
+      <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:7px" data-t="lbl_confirm">Confirm Password</label>
+      <input id="rsu-confirm" type="password" placeholder="••••••••" style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:#fff;font-family:var(--font);font-size:13px;box-sizing:border-box">
     </div>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button onclick="document.getElementById('reset-user-modal').style.display='none'"
-        style="padding:11px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
-        Cancel
-      </button>
-      <button onclick="confirmResetUserPass()"
-        style="padding:11px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a6b5a,#2ecc71);color:#fff;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
-        💾 Save
-      </button>
-    </div>
-  </div>
-</div>
-<!-- ASSET MODAL -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <h2 id="modal-title">Add New Asset</h2>
-    <div class="modal-section">
-      <div class="modal-section-title">Basic Information</div>
-      <div class="form-grid">
-        <div class="fg"><label>Type *</label>
-          <select id="f-type"><option>Laptop</option><option>Monitor</option><option>Phone</option><option>Printer</option><option>Router</option><option>Tablet</option><option>Other</option></select></div>
-        <div class="fg"><label>Status *</label>
-          <select id="f-status"><option value="Available">Available</option><option value="Assigned">Assigned</option><option value="صيانة">Maintenance</option><option value="مُعطَّل">Out of Service</option></select></div>
-        <div class="fg full"><label>Name / Model *</label><input id="f-name" placeholder="e.g. Dell Latitude 5540"></div>
-        <div class="fg"><label>Brand</label><input id="f-brand" placeholder="Dell / HP / Apple"></div>
-        <div class="fg"><label>Serial Number</label><input id="f-serial" placeholder="SN-XXXXXXXX"></div>
-      </div>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-title">بيانات العهدة</div>
-      <div class="form-grid">
-        <div class="fg"><label>الAssigned إليه</label><input id="f-user" placeholder="Employee name"></div>
-        <div class="fg"><label>Department</label><input id="f-dept" placeholder="اسم Department"></div>
-        <div class="fg"><label>Received Date</label><input id="f-date" type="date"></div>
-        <div class="fg"><label>تاريخ انتهاء Warranty</label><input id="f-warranty" type="date"></div>
-      </div>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-title"><span data-i18n="section_notes">Notes</span></div>
-      <div class="fg"><textarea id="f-notes" placeholder="Any additional details..."></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()"><span data-i18n="btn_cancel">Cancel</span></button>
-      <button class="btn btn-green" id="save-btn" onclick="saveAsset()"><span data-i18n="btn_save">💾 Save</span></button>
+      <button onclick="document.getElementById('reset-user-modal').style.display='none'" style="padding:11px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer" data-t="btn_cancel">Cancel</button>
+      <button onclick="confirmResetUserPass()" style="padding:11px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--ntsc),var(--ntsc-light));color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer" data-t="btn_save">💾 Save</button>
     </div>
   </div>
 </div>
 
-<!-- USER MODAL -->
-<div class="overlay" id="user-overlay">
-  <div class="modal" style="max-width:420px">
-    <h2 id="user-modal-title"><span data-i18n="modal_add_admin">Add New Admin</span></h2>
-    <div class="form-grid" style="grid-template-columns:1fr">
-      <div class="fg"><label>Username *</label><input id="u-username" placeholder="username"></div>
-      <div class="fg"><label>Full Name</label><input id="u-fullname" placeholder="Full Name"></div>
-      <div class="fg"><label>Password *</label><input id="u-pass" type="password" placeholder="••••••••"></div>
-      <div class="fg"><label>📧 Email (for notifications)</label><input id="u-email" type="email" placeholder="name@ntsc.gov.sa"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeUserModal()"><span data-i18n="btn_cancel">Cancel</span></button>
-      <button class="btn btn-green" onclick="saveUser()"><span data-i18n="btn_save">💾 Save</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- QR MODAL -->
-<div class="overlay" id="qr-overlay">
-  <div class="modal qr-modal">
-    <h2>QR Code — العهدة</h2>
-    <div class="qr-asset-name" id="qr-asset-name"></div>
-    <div class="qr-asset-id" id="qr-asset-id"></div>
-    <div id="qr-container"></div>
-    <div class="modal-footer" style="justify-content:center">
-      <button class="btn btn-ghost" onclick="closeQR()">إغلاق</button>
-      <button class="btn btn-green" onclick="printQR()">🖨️ طباعة</button>
-    </div>
-  </div>
-</div>
-
-<!-- PDF PRINT AREA -->
-<div id="print-area"></div>
 <div class="toast" id="toast"></div>
 
 <script>
+
 // ── GLOBALS ────────────────────────────────────────────────────────────────
 const ICONS={'Laptop':'💻','Monitor':'🖥️','Phone':'📱','Printer':'🖨️','Router':'📡','Tablet':'📟','Other':'📦'};
 let DB=null, assets=[], currentUser=null, editId=null;
@@ -1104,7 +1118,7 @@ async function loadUsers(){
           ${u.username!==currentUser.username?`<button class="btn btn-d btn-sm" onclick="deleteUser(${u.id},'${u.username}')">🗑️ Delete</button>`:'<span class="badge bg" style="font-size:10px;padding:3px 8px">You</span>'}
         </div>
       </div>`).join('')
-    :'<div class="empty-state"><div class="ei">👥</div><p>No users found</p></div>';
+    :'<div class="empty-s"><div class="ei">👥</div><p>'+t('no_users')+'</p></div>';
 }
 
 async function saveUser(){
@@ -1256,8 +1270,8 @@ function renderReports(){
 // ── QR ─────────────────────────────────────────────────────────────────────
 function showQR(id){
   const a=assets.find(x=>x.id==id);
-  document.getElementById('qr-asset-name').textContent=a.name;
-  document.getElementById('qr-asset-id').textContent=a.asset_id||id;
+  document.getElementById('qr-name').textContent=a.name;
+  document.getElementById('qr-id').textContent=a.asset_id||id;
   const container=document.getElementById('qr-container');
   container.innerHTML='';
   new QRCode(container,{
@@ -1265,13 +1279,13 @@ function showQR(id){
     width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',
     correctLevel:QRCode.CorrectLevel.M
   });
-  document.getElementById('qr-overlay').classList.add('open');
+  document.getElementById('qov').classList.add('open');
 }
-function closeQR(){document.getElementById('qr-overlay').classList.remove('open')}
+function closeQR(){document.getElementById('qov').classList.remove('open')}
 function printQR(){
   const content=document.getElementById('qr-container').innerHTML;
-  const name=document.getElementById('qr-asset-name').textContent;
-  const id=document.getElementById('qr-asset-id').textContent;
+  const name=document.getElementById('qr-name').textContent;
+  const id=document.getElementById('qr-id').textContent;
   const w=window.open('','_blank','width=400,height=500');
   w.document.write(`<html dir="rtl"><head><title>QR - ${name}</title><style>
     body{font-family:Cairo,sans-serif;text-align:center;padding:30px;background:#fff}
@@ -1371,11 +1385,11 @@ function openModal(id=null){
   document.getElementById('f-date').value=a?.received_date||'';
   document.getElementById('f-warranty').value=a?.warranty_end||'';
   document.getElementById('f-notes').value=a?.notes||'';
-  document.getElementById('overlay').classList.add('open');
+  document.getElementById('ov').classList.add('open');
 }
-function closeModal(){document.getElementById('overlay').classList.remove('open');editId=null}
-function openUserModal(){document.getElementById('u-username').value='';document.getElementById('u-fullname').value='';document.getElementById('u-pass').value='';document.getElementById('user-overlay').classList.add('open')}
-function closeUserModal(){document.getElementById('user-overlay').classList.remove('open')}
+function closeModal(){document.getElementById('ov').classList.remove('open');editId=null}
+function openUserModal(){document.getElementById('u-username').value='';document.getElementById('u-fullname').value='';document.getElementById('u-pass').value='';document.getElementById('uov').classList.add('open')}
+function closeUserModal(){document.getElementById('uov').classList.remove('open')}
 
 function showPanel(name,el){
   if(name==='profile'){loadProfile();}
@@ -1409,7 +1423,7 @@ function exportCSV(){
   el.download='assets.csv';el.click();
 }
 
-[document.getElementById('overlay'),document.getElementById('qr-overlay'),document.getElementById('user-overlay')]
+[document.getElementById('ov'),document.getElementById('qov'),document.getElementById('uov')]
   .forEach(el=>el.addEventListener('click',e=>{if(e.target===e.currentTarget)e.target.classList.remove('open')}));
 
 // ── PROFILE ──────────────────────────────────────────────────────────────
@@ -1914,7 +1928,7 @@ async function saveEditUser(){
     const re = document.getElementById('sb-userrole');
     if(re) re.textContent = '@'+currentUser.username;
   }
-  toast('✅ User updated');
+  toast('✅ '+(currentLang==='ar'?'تم التحديث':'User updated'));
   closeEditUserModal();
   loadUsers();
 }
@@ -2091,416 +2105,275 @@ setInterval(()=>{
 }, 60000);
 
 
+
+
 // ═══════════════════════════════════════════════════════════════
-// LANGUAGE SYSTEM — EN / AR
+// SECURITY: Password Hashing (SHA-256)
 // ═══════════════════════════════════════════════════════════════
-const TRANSLATIONS = {
+// CLEAN LANGUAGE SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+const T = {
   en: {
-    // Sidebar
-    nav_assets: '📋 Assets',
-    nav_import: '🤖 Smart Import',
-    nav_warranty: '🛡️ Warranties',
-    nav_reports: '📊 Reports',
-    nav_users: '👥 Users',
-    nav_profile: '⚙️ My Account',
-    nav_log: '📜 Activity Log',
-    btn_add_asset: '+ Add New Asset',
-    btn_signout: '🚪 Sign Out',
+    // Nav
+    nav_assets:'Assets', nav_import:'Smart Import', nav_warranty:'Warranties',
+    nav_reports:'Reports', nav_users:'Users', nav_profile:'My Account',
+    nav_log:'Activity Log', btn_add:'+ Add New Asset', btn_signout:'Sign Out',
     // Stats
-    stat_total: 'Total Assets',
-    stat_assigned: 'Assigned',
-    stat_available: 'Available',
-    stat_maintenance: 'Maintenance',
-    stat_warranty: 'Warranty Expiring',
+    s_total:'Total Assets', s_assigned:'Assigned', s_available:'Available',
+    s_maintenance:'Maintenance', s_warranty:'Warranty Expiring',
     // Pages
-    page_assets_title: '📋 Assets',
-    page_assets_sub: 'Manage and track all IT assets',
-    page_import_title: '🤖 AI-Powered Smart Import',
-    page_import_sub: 'Upload any Excel or CSV file — AI will analyze and import all assets automatically',
-    page_warranty_title: '🛡️ Warranties',
-    page_reports_title: '📊 Reports',
-    page_users_title: '👥 Users',
-    page_users_sub: 'Manage admin accounts',
-    page_profile_title: '⚙️ Account Settings',
-    page_profile_sub: 'Update your login information',
-    page_log_title: '📜 Activity Log',
+    p_assets:'Assets', p_assets_sub:'Manage and track all IT assets',
+    p_import:'AI-Powered Smart Import',
+    p_import_sub:'Upload any Excel or CSV — AI analyzes and imports assets automatically',
+    p_warranty:'Warranties', p_warranty_sub:'Track asset warranty expiration dates',
+    p_reports:'Reports', p_users:'Users', p_users_sub:'Manage admin accounts',
+    p_profile:'Account Settings', p_profile_sub:'Update your login information',
+    p_log:'Activity Log',
     // Toolbar
-    search_placeholder: 'Search by name, serial number or user...',
-    filter_all_types: 'All Types',
-    filter_all_status: 'All Statuses',
-    type_laptop: 'Laptop',
-    type_monitor: 'Monitor',
-    type_phone: 'Phone',
-    type_printer: 'Printer',
-    type_router: 'Router',
-    type_tablet: 'Tablet',
-    type_other: 'Other',
-    status_assigned: 'Assigned',
-    status_available: 'Available',
-    status_maintenance: 'Maintenance',
-    status_broken: 'Out of Service',
-    btn_export: '⬇ Export',
-    btn_delete_all: '🗑️ Delete All',
+    search_ph:'Search by name, serial number or user...',
+    all_types:'All Types', all_status:'All Statuses',
+    t_laptop:'Laptop', t_monitor:'Monitor', t_phone:'Phone',
+    t_printer:'Printer', t_router:'Router', t_tablet:'Tablet', t_other:'Other',
+    s_ass:'Assigned', s_avail:'Available', s_maint:'Maintenance', s_broken:'Out of Service',
+    btn_export:'⬇ Export', btn_del_all:'🗑️ Delete All',
     // Table
-    th_asset_id: 'Asset ID',
-    th_type: 'Type',
-    th_name: 'Name / Model',
-    th_serial: 'Serial Number',
-    th_assigned_to: 'Assigned To',
-    th_dept: 'Department',
-    th_status: 'Status',
-    th_warranty: 'Warranty',
-    th_actions: 'Actions',
-    th_received: 'Received',
-    th_warranty_end: 'Warranty End',
-    // Modal
-    modal_add_asset: 'Add New Asset',
-    modal_edit_asset: 'Edit Asset',
-    section_basic: 'Basic Information',
-    section_assignment: 'Assignment & Warranty',
-    section_notes: 'Notes',
-    lbl_type: 'Type *',
-    lbl_status: 'Status *',
-    lbl_name: 'Name / Model *',
-    lbl_brand: 'Brand',
-    lbl_serial: 'Serial Number',
-    lbl_user: 'Assigned To',
-    lbl_dept: 'Department',
-    lbl_received: 'Received Date',
-    lbl_warranty: 'Warranty End',
-    lbl_notes: 'Notes',
-    btn_cancel: 'Cancel',
-    btn_save: '💾 Save',
-    // Users
-    btn_add_admin: '+ Add Admin',
-    modal_add_admin: 'Add New Admin',
-    lbl_username: 'Username *',
-    lbl_fullname: 'Full Name',
-    lbl_password: 'Password *',
-    lbl_email: '📧 Email (for notifications)',
-    lbl_email_short: 'Email',
-    no_email_warning: '⚠️ No email — will not receive notifications',
-    btn_edit: '✏️ Edit',
-    btn_delete: '🗑️ Delete',
-    btn_password: '🔑 Password',
-    you_label: 'You',
-    no_users: 'No users found',
-    last_login: 'Last login:',
-    never_logged: 'Never logged in',
-    role_admin: 'System Admin',
+    th_id:'Asset ID', th_type:'Type', th_name:'Name / Model',
+    th_serial:'Serial Number', th_assigned:'Assigned To', th_dept:'Department',
+    th_status:'Status', th_warranty:'Warranty', th_actions:'Actions',
+    th_received:'Received', th_wend:'Warranty End',
+    // Modal labels
+    m_add:'Add New Asset', m_edit:'Edit Asset',
+    sec_basic:'Basic Information', sec_assign:'Assignment & Warranty', sec_notes:'Notes',
+    lbl_type:'Type *', lbl_status:'Status *', lbl_name:'Name / Model *',
+    lbl_brand:'Brand', lbl_serial:'Serial Number', lbl_user:'Assigned To',
+    lbl_dept:'Department', lbl_received:'Received Date', lbl_warranty:'Warranty End',
+    lbl_notes:'Additional notes...', btn_cancel:'Cancel', btn_save:'💾 Save',
+    // User modal
+    m_add_admin:'Add New Admin', lbl_username:'Username *',
+    lbl_fullname:'Full Name', lbl_password:'Password *',
+    lbl_email:'📧 Email (for notifications)',
+    btn_add_admin:'+ Add Admin',
     // Profile
-    section_account: 'Account Info',
-    section_change_pass: 'Change Password',
-    lbl_current_pass: 'Current Password',
-    lbl_new_pass: 'New Password (min 6 chars)',
-    lbl_confirm_pass: 'Confirm New Password',
-    btn_save_changes: '💾 Save Changes',
-    // Log
-    no_activity: 'No activity yet',
-    // Empty
-    no_results: 'No results found',
-    no_warranty: 'No assets with warranty date',
+    sec_account:'Account Info', sec_pass:'Change Password',
+    lbl_cur_pass:'Current Password', lbl_new_pass:'New Password (min 6 chars)',
+    lbl_confirm:'Confirm New Password', btn_save_ch:'💾 Save Changes',
+    lbl_email_sh:'Email',
     // Modals
-    logout_title: 'Sign Out',
-    logout_msg: 'Are you sure you want to sign out?',
-    btn_yes_signout: 'Yes, Sign Out',
-    delete_all_title: 'Delete All Assets',
-    delete_user_title: 'Delete User',
-    btn_yes_delete: 'Yes, Delete',
-    // Reset
-    reset_title: 'Reset Password',
-    reset_sub: 'Enter your username and email to receive a new password',
-    btn_send_pass: '📧 Send New Password',
-    change_pass_title: 'Change Password',
+    logout_title:'Sign Out', logout_msg:'Are you sure you want to sign out?',
+    btn_yes_out:'Yes, Sign Out',
+    del_all_title:'Delete All Assets',
+    del_title:'Delete Asset', del_msg:'Delete:',
+    btn_yes_del:'Yes, Delete', btn_confirm_del:'Confirm Delete',
+    del_confirm_word:'DELETE', del_confirm_ph:'Type: DELETE',
+    del_confirm_msg:'To confirm, type',
+    reset_title:'Reset Password',
+    reset_sub:'Enter your username and email to receive a new password.',
+    btn_send_pass:'📧 Send New Password',
+    change_pass:'Change Password',
     // Import
-    import_drop_title: 'Drag & drop Excel file here or click to browse',
-    import_drop_sub: 'Supports .xlsx, .xls, and .csv — AI understands any format',
-    step1: 'Reading file...',
-    step2: 'Analyzing with AI...',
-    step3: 'Previewing results...',
-    total_records: 'Total Records',
-    btn_import_all: '✅ Import All',
+    drop_title:'Drag & drop Excel file here or click to browse',
+    drop_sup:'Supports .xlsx, .xls, and .csv',
+    drop_ai:'AI understands any format and classifies assets automatically',
+    step1:'Reading file...', step2:'Analyzing with AI...', step3:'Previewing results...',
+    total_rec:'Total Records', preview_title:'Data Preview',
+    btn_import:'✅ Import All', btn_reset_import:'↩ Cancel',
+    card1_t:'Upload Any File', card1_s:'Any Excel — any columns or format',
+    card2_t:'AI Analyzes', card2_s:'Auto-detects columns and classifies assets',
+    card3_t:'Review & Import', card3_s:'Preview results then click Import',
     // Warranty
-    btn_warranty_report: '📧 Send Warranty Report',
-    warranty_expired: 'Expired ❌',
-    warranty_soon: 'days ⚠️',
-    warranty_ok: 'days remaining ✅',
+    btn_war_rep:'📧 Send Warranty Report',
     // Reports
-    btn_send_report: '📧 Send Full Report',
-    btn_backup: '💾 Backup',
-    col_dept: 'Department',
-    col_total: 'Total',
-    // Sidebar logo
-    org_name: 'NTSC',
-    org_sub: 'IT Asset Management',
-    sys_label: 'Asset Management System',
-    user_role: 'Admin',
-    th_name_short: 'Name',
-    th_received: 'Received',
-    th_warranty_end: 'Warranty End',
-    col_total: 'Total',
-    th_assigned_text: 'Assigned',
-    th_available_text: 'Available',
-    th_maintenance_text: 'Maintenance',
-    card_upload_title: 'Upload Any File',
-    card_upload_sub: 'Any Excel — any columns',
-    card_ai_title: 'AI Analyzes',
-    card_ai_sub: 'Auto-detects and classifies assets',
-    card_review_title: 'Review & Import',
-    card_review_sub: 'Preview then click Import',
-    import_drop_title: 'Drag & drop Excel file here or click to browse',
-    import_supports: 'Supports .xlsx, .xls, and .csv',
-    import_ai_desc: 'AI understands any format',
-    step1: 'Reading file...',
-    step2: 'Analyzing with AI...',
-    step3: 'Previewing results...',
-    total_records: 'Total Records',
-    preview_title: 'Data Preview',
-    btn_import_all: '✅ Import All',
-    page_warranty_sub: 'Track asset warranty expiration dates',
-    delete_confirm_title: 'Confirm Delete',
-    section_account: 'Account Info',
-    section_change_pass: 'Change Password',
-    nav_assets_text: 'Assets',
-    nav_import_text: 'Smart Import',
-    nav_warranty_text: 'Warranties',
-    nav_reports_text: 'Reports',
-    nav_users_text: 'Users',
-    nav_profile_text: 'My Account',
-    nav_log_text: 'Activity Log',
-    btn_signout_text: 'Sign Out',
-    btn_add_asset_text: '+ Add New Asset',
-    btn_delete_all_text: 'Delete All',
-    page_assets_title_text: 'Assets',
-    page_warranty_text: 'Warranties',
-    page_reports_text: 'Reports',
-    page_users_text: 'Users',
-    page_profile_text: 'Account Settings',
-    page_log_text: 'Activity Log',
+    btn_full_rep:'📧 Send Full Report', btn_backup:'💾 Backup',
+    col_total:'Total', col_assigned:'Assigned', col_available:'Available', col_maint:'Maintenance',
+    chart_types:'Asset Types', chart_status:'Status Distribution',
+    // Empty states
+    no_results:'No results found', no_users:'No users found',
+    no_activity:'No activity yet', no_warranty:'No assets with warranty date',
+    no_assets:'No assets yet',
+    // User card
+    last_login:'Last login:', never:'Never', role:'System Admin',
+    you:'You', btn_edit:'✏️ Edit', btn_del:'🗑️ Delete', btn_pass:'🔑 Password',
+    no_email:'⚠️ No email — will not receive notifications',
+    // Org
+    org:'NTSC', org_sub:'IT Asset Management', sys_label:'Asset Management System',
+    user_role:'Admin',
+    // Warranty status
+    war_expired:'Expired ❌', war_soon:' days ⚠️', war_ok:' days remaining ✅',
+    // Edit user
+    edit_user_title:'✏️ Edit User',
   },
   ar: {
-    nav_assets: '📋 الأصول والعهد',
-    nav_import: '🤖 استيراد ذكي',
-    nav_warranty: '🛡️ الضمانات',
-    nav_reports: '📊 التقارير',
-    nav_users: '👥 المستخدمون',
-    nav_profile: '⚙️ حسابي',
-    nav_log: '📜 Activity Log',
-    btn_add_asset: '+ Add New Asset',
-    btn_signout: '🚪 Sign Out',
-    stat_total: 'إجمالي الأصول',
-    stat_assigned: 'Assigned',
-    stat_available: 'متاح',
-    stat_maintenance: 'صيانة / معطّل',
-    stat_warranty: 'ضمان ينتهي قريباً',
-    page_assets_title: '📋 الأصول والعهد',
-    page_assets_sub: 'Manage and track all IT assets',
-    page_import_title: '🤖 استيراد Excel بالذكاء الاصطناعي',
-    page_import_sub: 'Upload Any File Excel — سيحلله الذكاء الاصطناعي ويضيف الأصول تلقائياً',
-    page_warranty_title: '🛡️ الضمانات',
-    page_reports_title: '📊 التقارير',
-    page_users_title: '👥 المستخدمون',
-    page_users_sub: 'Manage admin accounts',
-    page_profile_title: '⚙️ Account Settings',
-    page_profile_sub: 'Update your login information',
-    page_log_title: '📜 Activity Log',
-    search_placeholder: 'ابحث بالاسم أو Serial Number أو المستخدم...',
-    filter_all_types: 'كل الTypes',
-    filter_all_status: 'كل الحالات',
-    type_laptop: 'لابتوب',
-    type_monitor: 'شاشة',
-    type_phone: 'هاتف',
-    type_printer: 'طابعة',
-    type_router: 'راوتر',
-    type_tablet: 'تابلت',
-    type_other: 'أخرى',
-    status_assigned: 'Assigned',
-    status_available: 'متاح',
-    status_maintenance: 'صيانة',
-    status_broken: 'مُعطَّل',
-    btn_export: '⬇ تصدير',
-    btn_delete_all: '🗑️ حذف الكل',
-    th_asset_id: 'رقم العهدة',
-    th_type: 'النوع',
-    th_name: 'الاسم / الموديل',
-    th_serial: 'Serial Number',
-    th_assigned_to: 'الAssigned إليه',
-    th_dept: 'القسم',
-    th_status: 'الحالة',
-    th_warranty: 'الضمان',
-    th_actions: 'إجراءات',
-    th_received: 'Received Date',
-    th_warranty_end: 'Warranty End',
-    modal_add_asset: 'Add New Asset',
-    modal_edit_asset: 'Edit Asset',
-    section_basic: 'Basic Info',
-    section_assignment: 'Assignment & Warranty',
-    section_notes: 'ملاحظات',
-    lbl_type: 'النوع *',
-    lbl_status: 'الحالة *',
-    lbl_name: 'Name / Model *',
-    lbl_brand: 'Brand',
-    lbl_serial: 'Serial Number',
-    lbl_user: 'الAssigned إليه',
-    lbl_dept: 'القسم',
-    lbl_received: 'Received Date',
-    lbl_warranty: 'Warranty End',
-    lbl_notes: 'ملاحظات',
-    btn_cancel: 'Cancel',
-    btn_save: '💾 Save',
-    btn_add_admin: '+ Add Admin',
-    modal_add_admin: 'Add New Admin',
-    lbl_username: 'Username *',
-    lbl_fullname: 'Full Name',
-    lbl_password: 'Password *',
-    lbl_email: '📧 Email (for notifications)',
-    lbl_email_short: 'Email',
-    no_email_warning: '⚠️ No email — will not receive alerts',
-    btn_edit: '✏️ تعديل',
-    btn_delete: '🗑️ حذف',
-    btn_password: '🔑 باسورد',
-    you_label: 'أنت',
-    no_users: 'No users found',
-    last_login: 'آخر دخول:',
-    never_logged: 'Never',
-    role_admin: 'مدير النظام',
-    section_account: 'Account Info',
-    section_change_pass: 'Change Password',
-    lbl_current_pass: 'Current Password',
-    lbl_new_pass: 'New Password (6 أحرف على الأقل)',
-    lbl_confirm_pass: 'تأكيد New Password',
-    btn_save_changes: '💾 Save التغييرات',
-    no_activity: 'No activity yet',
-    no_results: 'No results found',
-    no_warranty: 'No assets with warranty date',
-    logout_title: 'Sign Out',
-    logout_msg: 'Are you sure you want to sign out?',
-    btn_yes_signout: 'Yes, Sign Out',
-    delete_all_title: 'Delete All Assets',
-    delete_user_title: 'حذف المستخدم',
-    btn_yes_delete: 'Yes, Delete',
-    reset_title: 'Reset Password',
-    reset_sub: 'أدخل اسم المستخدم والإيميل لاستلام كلمة مرور جديدة',
-    btn_send_pass: '📧 Send New Password',
-    change_pass_title: 'Change Password',
-    import_drop_title: 'Drag & drop Excel file here or click to browse',
-    import_drop_sub: 'Supports .xlsx, .xls, and .csv — الذكاء الاصطناعي يفهم أي تنسيق',
-    step1: 'Reading file...',
-    step2: 'Analyzing with AI...',
-    step3: 'Previewing results...',
-    total_records: 'Total Records',
-    btn_import_all: '✅ استيراد الكل',
-    btn_warranty_report: '📧 Send Warranty Report',
-    warranty_expired: 'منتهي ❌',
-    warranty_soon: 'يوم ⚠️',
-    warranty_ok: 'يوم متبقي ✅',
-    btn_send_report: '📧 Send Full Report',
-    btn_backup: '💾 Backup',
-    col_dept: 'القسم',
-    col_total: 'الإجمالي',
-    org_name: 'NTSC',
-    org_sub: 'إدارة الأصول التقنية',
-    sys_label: 'نظام إدارة الأصول',
-    user_role: 'Admin',
+    nav_assets:'الأصول والعهد', nav_import:'استيراد ذكي', nav_warranty:'الضمانات',
+    nav_reports:'التقارير', nav_users:'المستخدمون', nav_profile:'حسابي',
+    nav_log:'سجل الحركات', btn_add:'+ إضافة أصل جديد', btn_signout:'تسجيل الخروج',
+    s_total:'إجمالي الأصول', s_assigned:'مُعهَّد', s_available:'متاح',
+    s_maintenance:'صيانة / معطّل', s_warranty:'ضمان ينتهي قريباً',
+    p_assets:'الأصول والعهد', p_assets_sub:'إدارة وتتبع جميع الأصول التقنية',
+    p_import:'استيراد Excel بالذكاء الاصطناعي',
+    p_import_sub:'ارفع أي ملف Excel — سيحلله الذكاء الاصطناعي ويضيف الأصول تلقائياً',
+    p_warranty:'الضمانات', p_warranty_sub:'متابعة تواريخ انتهاء الضمانات',
+    p_reports:'التقارير', p_users:'المستخدمون', p_users_sub:'إدارة حسابات الأدمنز',
+    p_profile:'إعدادات حسابي', p_profile_sub:'تعديل بيانات الدخول',
+    p_log:'سجل الحركات',
+    search_ph:'ابحث بالاسم أو الرقم التسلسلي أو المستخدم...',
+    all_types:'كل الأنواع', all_status:'كل الحالات',
+    t_laptop:'لابتوب', t_monitor:'شاشة', t_phone:'هاتف',
+    t_printer:'طابعة', t_router:'راوتر', t_tablet:'تابلت', t_other:'أخرى',
+    s_ass:'مُعهَّد', s_avail:'متاح', s_maint:'صيانة', s_broken:'مُعطَّل',
+    btn_export:'⬇ تصدير', btn_del_all:'🗑️ حذف الكل',
+    th_id:'رقم العهدة', th_type:'النوع', th_name:'الاسم / الموديل',
+    th_serial:'الرقم التسلسلي', th_assigned:'المُعهَّد إليه', th_dept:'القسم',
+    th_status:'الحالة', th_warranty:'الضمان', th_actions:'إجراءات',
+    th_received:'تاريخ الاستلام', th_wend:'انتهاء الضمان',
+    m_add:'إضافة أصل جديد', m_edit:'تعديل الأصل',
+    sec_basic:'المعلومات الأساسية', sec_assign:'بيانات العهدة والضمان', sec_notes:'ملاحظات',
+    lbl_type:'النوع *', lbl_status:'الحالة *', lbl_name:'الاسم / الموديل *',
+    lbl_brand:'الماركة', lbl_serial:'الرقم التسلسلي', lbl_user:'المُعهَّد إليه',
+    lbl_dept:'القسم', lbl_received:'تاريخ الاستلام', lbl_warranty:'انتهاء الضمان',
+    lbl_notes:'أي تفاصيل إضافية...', btn_cancel:'إلغاء', btn_save:'💾 حفظ',
+    m_add_admin:'إضافة أدمن جديد', lbl_username:'اسم المستخدم *',
+    lbl_fullname:'الاسم الكامل', lbl_password:'كلمة المرور *',
+    lbl_email:'📧 البريد الإلكتروني (للتنبيهات)',
+    btn_add_admin:'+ إضافة أدمن',
+    sec_account:'معلومات الحساب', sec_pass:'تغيير كلمة المرور',
+    lbl_cur_pass:'كلمة المرور الحالية', lbl_new_pass:'كلمة المرور الجديدة (6 أحرف على الأقل)',
+    lbl_confirm:'تأكيد كلمة المرور الجديدة', btn_save_ch:'💾 حفظ التغييرات',
+    lbl_email_sh:'البريد الإلكتروني',
+    logout_title:'تسجيل الخروج', logout_msg:'هل تريد الخروج من النظام؟',
+    btn_yes_out:'نعم، خروج',
+    del_all_title:'حذف جميع الأصول',
+    del_title:'حذف الأصل', del_msg:'هل تريد حذف:',
+    btn_yes_del:'نعم، احذف', btn_confirm_del:'تأكيد الحذف',
+    del_confirm_word:'حذف', del_confirm_ph:'اكتب: حذف',
+    del_confirm_msg:'للتأكيد، اكتب كلمة',
+    reset_title:'استعادة كلمة المرور',
+    reset_sub:'أدخل اسم المستخدم والإيميل لاستلام كلمة مرور جديدة.',
+    btn_send_pass:'📧 إرسال كلمة المرور الجديدة',
+    change_pass:'تغيير كلمة المرور',
+    drop_title:'اسحب ملف Excel هنا أو اضغط للاختيار',
+    drop_sup:'يدعم .xlsx و .xls و .csv',
+    drop_ai:'الذكاء الاصطناعي يفهم أي تنسيق ويصنف الأصول تلقائياً',
+    step1:'قراءة الملف...', step2:'تحليل بالذكاء الاصطناعي...', step3:'معاينة النتائج...',
+    total_rec:'إجمالي السجلات', preview_title:'معاينة البيانات',
+    btn_import:'✅ استيراد الكل', btn_reset_import:'↩ إلغاء',
+    card1_t:'ارفع أي ملف', card1_s:'أي Excel بأي تنسيق',
+    card2_t:'الذكاء يحلل', card2_s:'يفهم الأعمدة ويصنف الأصول',
+    card3_t:'راجع وأضف', card3_s:'شوف المعاينة واضغط استيراد',
+    btn_war_rep:'📧 إرسال تقرير الضمانات',
+    btn_full_rep:'📧 إرسال تقرير شامل', btn_backup:'💾 نسخة احتياطية',
+    col_total:'الإجمالي', col_assigned:'مُعهَّد', col_available:'متاح', col_maint:'صيانة',
+    chart_types:'توزيع الأنواع', chart_status:'الحالات',
+    no_results:'لا توجد نتائج', no_users:'لا يوجد مستخدمون',
+    no_activity:'لا توجد حركات بعد', no_warranty:'لا توجد أصول بتاريخ ضمان',
+    no_assets:'لا توجد أصول بعد',
+    last_login:'آخر دخول:', never:'لم يسجل بعد', role:'مدير النظام',
+    you:'أنت', btn_edit:'✏️ تعديل', btn_del:'🗑️ حذف', btn_pass:'🔑 باسورد',
+    no_email:'⚠️ لا يوجد إيميل — لن يتلقى تنبيهات',
+    org:'NTSC', org_sub:'إدارة الأصول التقنية', sys_label:'نظام إدارة الأصول',
+    user_role:'أدمن',
+    war_expired:'منتهي ❌', war_soon:' يوم ⚠️', war_ok:' يوم متبقي ✅',
+    edit_user_title:'✏️ تعديل بيانات المستخدم',
   }
 };
 
-let currentLang = localStorage.getItem('ntsc_lang') || 'en';
+// Helper
+const L = () => T[currentLang];
+const t = (k) => T[currentLang][k] || T.en[k] || k;
 
-function t(key){ return TRANSLATIONS[currentLang][key] || TRANSLATIONS['en'][key] || key; }
+function setLang(lang) {
+  // Glass overlay effect
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(10,46,26,0.9);backdrop-filter:blur(16px);z-index:99999;transition:opacity 0.25s;opacity:0';
+  document.body.appendChild(ov);
+  requestAnimationFrame(() => { ov.style.opacity = '1'; });
 
-function setLang(lang){
-  // Glass transition effect
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,46,26,0.85);backdrop-filter:blur(12px);z-index:99998;transition:opacity 0.3s;opacity:0;pointer-events:none';
-  document.body.appendChild(overlay);
-  requestAnimationFrame(()=>{ overlay.style.opacity='1'; });
-  setTimeout(()=>{
+  setTimeout(() => {
     currentLang = lang;
-  localStorage.setItem('ntsc_lang', lang);
-  // Update direction
-  document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
-  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  // Update active button
-  const bEn=document.getElementById('btn-en'), bAr=document.getElementById('btn-ar');
-  if(bEn&&bAr){
-    bEn.style.background = lang==='en' ? 'var(--ntsc)' : 'transparent';
-    bEn.style.color = lang==='en' ? '#fff' : 'var(--w70)';
-    bAr.style.background = lang==='ar' ? 'var(--ntsc)' : 'transparent';
-    bAr.style.color = lang==='ar' ? '#fff' : 'var(--w70)';
-  }
-  // Re-render all UI
+    localStorage.setItem('ntsc_lang', lang);
+    const isAr = lang === 'ar';
+    document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+    // Toggle lang buttons
+    const bEn = document.getElementById('btn-en');
+    const bAr = document.getElementById('btn-ar');
+    if (bEn && bAr) {
+      bEn.style.background = isAr ? 'transparent' : 'var(--ntsc)';
+      bEn.style.color = isAr ? 'rgba(255,255,255,0.5)' : '#fff';
+      bAr.style.background = isAr ? 'var(--ntsc)' : 'transparent';
+      bAr.style.color = isAr ? '#fff' : 'rgba(255,255,255,0.5)';
+    }
     applyLang();
     renderTable();
     renderReports();
     renderWarrantyAlerts();
     renderWarrantyPanel();
     renderStats();
-    setTimeout(()=>{ overlay.style.opacity='0'; setTimeout(()=>overlay.remove(),300); }, 50);
-  }, 150);
+    setTimeout(() => { ov.style.opacity = '0'; setTimeout(() => ov.remove(), 250); }, 80);
+  }, 200);
 }
 
-function applyLang(){
-  const L = TRANSLATIONS[currentLang];
-  const dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-  
-  // Update document direction
-  document.documentElement.dir = dir;
-  document.documentElement.lang = currentLang;
-  document.body.style.direction = dir;
-  
-  // Update all elements with data-i18n attribute
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if(L[key]) el.textContent = L[key];
+function applyLang() {
+  const l = L();
+  // All elements with data-t attribute
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const k = el.getAttribute('data-t');
+    if (l[k] !== undefined) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.placeholder = l[k];
+      } else {
+        el.textContent = l[k];
+      }
+    }
   });
-  
-  // Update placeholders
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const key = el.getAttribute('data-i18n-ph');
-    if(L[key]) el.placeholder = L[key];
-  });
-  
-  // Update selects
-  document.querySelectorAll('[data-i18n-opts]').forEach(sel => {
-    const keys = sel.getAttribute('data-i18n-opts').split(',');
+  // Update selects with data-t-opts
+  const ftSel = document.getElementById('ft');
+  if (ftSel) {
+    const opts = ftSel.querySelectorAll('option');
+    const keys = ['all_types','t_laptop','t_monitor','t_phone','t_printer','t_router','t_tablet','t_other'];
+    opts.forEach((o,i) => { if(keys[i]) o.textContent = l[keys[i]] || o.textContent; });
+  }
+  const fsSel = document.getElementById('fs');
+  if (fsSel) {
+    const opts = fsSel.querySelectorAll('option');
+    const keys = ['all_status','s_ass','s_avail','s_maint','s_broken'];
+    opts.forEach((o,i) => { if(keys[i]) o.textContent = l[keys[i]] || o.textContent; });
+  }
+  // Asset type/status selects in modal
+  ['f-type','f-type-dup'].forEach(id => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
     const opts = sel.querySelectorAll('option');
-    opts.forEach((opt,i) => { if(keys[i] && L[keys[i]]) opt.textContent = L[keys[i]]; });
+    const keys = ['t_laptop','t_monitor','t_phone','t_printer','t_router','t_tablet','t_other'];
+    opts.forEach((o,i) => { if(keys[i]) o.textContent = l[keys[i]] || o.textContent; });
   });
-  
-  // Re-render dynamic content
-  renderTable();
-  renderReports();
-  renderWarrantyAlerts();
-  renderWarrantyPanel();
-  if(document.getElementById('panel-log').classList.contains('active')) loadLogs();
-  if(document.getElementById('panel-users').classList.contains('active')) loadUsers();
+  ['f-status','f-status-dup'].forEach(id => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    const opts = sel.querySelectorAll('option');
+    const keys = ['s_ass','s_avail','s_maint','s_broken'];
+    opts.forEach((o,i) => { if(keys[i]) o.textContent = l[keys[i]] || o.textContent; });
+  });
+  // Update delete confirm word
+  const dci = document.getElementById('delete-confirm-inp');
+  if(dci) dci.placeholder = l.del_confirm_ph;
 }
 
-
-function setT(id, text){
-  const el = document.getElementById(id);
-  if(el) el.textContent = text;
-}
-
-function updateSelect(id, options){
-  const sel = document.getElementById(id);
-  if(!sel) return;
-  const opts = sel.querySelectorAll('option');
-  opts.forEach((opt,i) => { if(options[i]) opt.textContent = options[i]; });
-}
-
-// Initialize lang on page load
-window.addEventListener('load', ()=>{
+// Apply on load
+window.addEventListener('load', () => {
   const saved = localStorage.getItem('ntsc_lang') || 'en';
-  if(saved !== currentLang){ currentLang = saved; }
-  document.documentElement.lang = currentLang === 'ar' ? 'ar' : 'en';
-  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-  const btnEn = document.getElementById('btn-en');
-  const btnAr = document.getElementById('btn-ar');
-  if(btnEn) btnEn.classList.toggle('active', currentLang === 'en');
-  if(btnAr) btnAr.classList.toggle('active', currentLang === 'ar');
-  setTimeout(applyLang, 100);
+  currentLang = saved;
+  document.documentElement.dir = saved === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = saved;
+  const bEn = document.getElementById('btn-en');
+  const bAr = document.getElementById('btn-ar');
+  if(bEn && bAr) {
+    bEn.style.background = saved === 'ar' ? 'transparent' : 'var(--ntsc)';
+    bEn.style.color = saved === 'ar' ? 'rgba(255,255,255,0.5)' : '#fff';
+    bAr.style.background = saved === 'ar' ? 'var(--ntsc)' : 'transparent';
+    bAr.style.color = saved === 'ar' ? '#fff' : 'rgba(255,255,255,0.5)';
+  }
+  setTimeout(applyLang, 200);
 });
 
 </script>
