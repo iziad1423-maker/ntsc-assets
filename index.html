@@ -191,11 +191,17 @@ tr:hover td{background:rgba(255,255,255,0.025)}
 
 /* REPORTS */
 .rg{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:16px}
+.rpt-card{background:var(--glass2);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:0}
 .rc{background:var(--glass2);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r);padding:18px}
 .rc h3{font-size:11px;font-weight:700;color:var(--w70);margin-bottom:14px;letter-spacing:0.5px;text-transform:uppercase}
 .br-row{display:flex;align-items:center;gap:9px;margin-bottom:9px;font-size:12px}
 .bl{min-width:72px;color:var(--w90)}.bt{flex:1;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
-.bf{height:100%;border-radius:3px;transition:width 0.6s ease}.bv{min-width:20px;text-align:left;color:var(--w70);font-weight:700}
+.bf{height:100%;border-radius:3px;transition:width 0.6s ease}
+.bar-row{display:flex;align-items:center;gap:9px;margin-bottom:9px;font-size:12px}
+.bar-lbl{min-width:80px;color:var(--w90);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.6s ease}
+.bar-val{min-width:20px;text-align:left;color:var(--w70);font-weight:700}.bv{min-width:20px;text-align:left;color:var(--w70);font-weight:700}
 
 /* USERS */
 .uc{background:var(--glass2);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r);
@@ -945,13 +951,13 @@ async function loadLogs(){
 async function loadUsers(){
   const {data}=await DB.from('admins').select('*').order('created_at',{ascending:true});
   document.getElementById('users-list').innerHTML=data?.length
-    ?data.map(u=>`<div class="user-card">
-        <div class="user-av">👤</div>
-        <div class="user-info">
-          <div class="uname">${u.fullname||u.username}</div>
-          <div class="urole">@${u.username} — System Admin</div>
-          <div class="ulast">Last login: ${u.last_login?fmtDt(u.last_login):'Never logged in'}</div>
-          <div class="ulast" style="color:var(--accent3)">${u.email?'📧 '+u.email:'⚠️ No email — will not receive notifications'}</div>
+    ?data.map(u=>`<div class="uc">
+        <div class="uav">👤</div>
+        <div class="ui">
+          <div class="un">${u.fullname||u.username}</div>
+          <div class="ur">@${u.username} — ${t('role')}</div>
+          <div class="ul">${t('last_login')} ${u.last_login?fmtDt(u.last_login):t('never')}</div>
+          <div class="ul" style="color:${u.email?'var(--accent)':'var(--warn)'}">${u.email?'📧 '+u.email:t('no_email')}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
           <button class="btn btn-e btn-sm" onclick="openEditUserModal(${u.id},'${u.username}','${u.fullname||''}','${u.email||''}')">✏️ Edit</button>
@@ -1025,7 +1031,7 @@ function renderWarrantyPanel(){
     return `<tr>
       <td style="font-family:monospace;font-size:11px;color:var(--white60)">${a.asset_id||'—'}</td>
       <td><strong>${a.name}</strong></td>
-      <td>${ICONS[a.asset_type]||'📦'} ${a.asset_type}</td>
+      <td>${getIcon(a.asset_type)||'📦'} ${a.asset_type}</td>
       <td>${a.assigned_to||'—'}</td>
       <td style="font-size:11px">${fmtDate(a.received_date)}</td>
       <td style="font-size:11px">${fmtDate(a.warranty_end)}</td>
@@ -1053,7 +1059,7 @@ function renderTable(){
     const mq=!q||(a.name+a.serial+a.assigned_to+a.department+(a.brand||'')).toLowerCase().includes(q);
     return mq&&(!ft||a.asset_type===ft)&&(!fs||a.status===fs);
   });
-  const bCls={Assigned:'bg',Available:'bb',صيانة:'bw',مُعطَّل:'br'};
+  const bCls={}; bCls[t('s_ass')]='bg'; bCls[t('s_avail')]='bb'; bCls[t('s_maint')]='bw'; bCls[t('s_broken')]='br';
   const tbody=document.getElementById('tbody');
   if(!f.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="ei">🔍</div><p>No results found</p></div></td></tr>`;return;}
   tbody.innerHTML=f.map(a=>{
@@ -1061,7 +1067,7 @@ function renderTable(){
     const warrantyCell=ws?`<span class="${ws.cls}">${ws.text}</span>`:'<span style="color:var(--white30)">—</span>';
     return`<tr>
       <td style="font-family:monospace;font-size:11px;color:var(--white60)">${a.asset_id||'—'}</td>
-      <td>${ICONS[a.asset_type]||'📦'} ${a.asset_type}</td>
+      <td>${getIcon(a.asset_type)||'📦'} ${a.asset_type}</td>
       <td><strong>${a.name}</strong>${a.brand?`<br><span style="font-size:11px;color:var(--white30)">${a.brand}</span>`:''}</td>
       <td style="font-family:monospace;font-size:11px">${a.serial||'—'}</td>
       <td>${a.assigned_to||'<span style="color:var(--white30)">—</span>'}</td>
@@ -1082,15 +1088,17 @@ function renderReports(){
   const tc={},sc={};
   assets.forEach(a=>{tc[a.asset_type]=(tc[a.asset_type]||0)+1;sc[a.status]=(sc[a.status]||0)+1;});
   const tm=Math.max(...Object.values(tc),1),sm=Math.max(...Object.values(sc),1);
-  const clrs={'Laptop':'#2ecc71','Monitor':'#3498db','Phone':'#f39c12','Printer':'#e74c3c','Router':'#9b59b6','Tablet':'#1abc9c','Other':'#7f8c8d'};
+  const clrs={};
+  clrs[t('t_laptop')]='#2ecc71'; clrs[t('t_monitor')]='#3498db'; clrs[t('t_phone')]='#f39c12';
+  clrs[t('t_printer')]='#e74c3c'; clrs[t('t_router')]='#9b59b6'; clrs[t('t_tablet')]='#1abc9c'; clrs[t('t_other')]='#7f8c8d';
   const sc2={Assigned:'#2ecc71',Available:'#3498db',صيانة:'#f39c12',مُعطَّل:'#e74c3c'};
   document.getElementById('rpt-grid').innerHTML=
     `<div class="rpt-card"><h3>Asset Types</h3>
-    ${Object.entries(tc).map(([k,v])=>`<div class="bar-row"><span class="bar-lbl">${ICONS[k]||'📦'} ${k}</span>
+    ${Object.entries(tc).map(([k,v])=>`<div class="bar-row"><span class="bar-lbl">${getIcon(k)} ${k}</span>
     <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/tm*100)}%;background:${clrs[k]||'#888'}"></div></div>
     <span class="bar-val">${v}</span></div>`).join('')}</div>
     <div class="rpt-card"><h3>Status</h3>
-    ${['Assigned','Available','صيانة','مُعطَّل'].map(s=>`<div class="bar-row"><span class="bar-lbl">${s}</span>
+    ${[t('s_ass'),t('s_avail'),t('s_maint'),t('s_broken')].map(s=>`<div class="bar-row"><span class="bar-lbl">${s}</span>
     <div class="bar-track"><div class="bar-fill" style="width:${Math.round((sc[s]||0)/sm*100)}%;background:${sc2[s]}"></div></div>
     <span class="bar-val">${sc[s]||0}</span></div>`).join('')}</div>`;
   const dm={};
@@ -1184,7 +1192,7 @@ function printPDF(id){
   </div>
   <div class="info-grid">
     <div class="info-item"><div class="lbl">Name / Model</div><div class="val">${a.name}</div></div>
-    <div class="info-item"><div class="lbl">Type</div><div class="val">${ICONS[a.asset_type]||''} ${a.asset_type}</div></div>
+    <div class="info-item"><div class="lbl">Type</div><div class="val">${getIcon(a.asset_type)||''} ${a.asset_type}</div></div>
     <div class="info-item"><div class="lbl">Brand</div><div class="val">${a.brand||'—'}</div></div>
     <div class="info-item"><div class="lbl">Serial Number</div><div class="val" style="font-family:monospace">${a.serial||'—'}</div></div>
     <div class="info-item"><div class="lbl">الAssigned إليه</div><div class="val">${a.assigned_to||'—'}</div></div>
