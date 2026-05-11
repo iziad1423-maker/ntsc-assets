@@ -842,9 +842,16 @@ async function doLogin(){
   err.textContent='';
   if(!username||!password){err.textContent='الرجاء إدخال Username وPassword';return;}
   try{
-    const {data,error}=await DB.from('admins').select('*').eq('username',username).eq('password',password).single();
+    // Try plain password first (for existing accounts)
+    let result = await DB.from('admins').select('*').eq('username',username).eq('password',password).single();
+    // If not found, try hashed password
+    if(result.error || !result.data){
+      const hashedPw = await hashPassword(password);
+      result = await DB.from('admins').select('*').eq('username',username).eq('password',hashedPw).single();
+    }
+    const {data,error} = result;
     if(error||!data){
-      err.textContent = error?.code==='PGRST116' ? 'Username أو Password غير صحيحة' : (error?.message||'Username أو Password غير صحيحة');
+      err.textContent = 'Invalid username or password';
       return;
     }
     currentUser=data;
