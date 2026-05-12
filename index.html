@@ -10,10 +10,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-window.EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+window.EMAILJS_PUBLIC_KEY = 'QIa4qHaHsbai1_iqm';
 window.addEventListener('load', function(){
   try{
-    if(typeof emailjs !== 'undefined' && window.EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY'){
+    if(typeof emailjs !== 'undefined' && window.EMAILJS_PUBLIC_KEY !== 'QIa4qHaHsbai1_iqm'){
       emailjs.init(window.EMAILJS_PUBLIC_KEY);
     }
   }catch(e){ console.warn('EmailJS init failed:', e.message); }
@@ -1628,7 +1628,7 @@ async function sendEmailNotification(subject, body, extraDetails=''){
       console.warn('EmailJS not loaded - check Public Key setup');
       return;
     }
-    if(window.EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
+    if(window.EMAILJS_PUBLIC_KEY === 'QIa4qHaHsbai1_iqm'){
       console.warn('EmailJS Public Key not configured');
       return;
     }
@@ -1869,7 +1869,7 @@ async function doResetPassword(){
     // Update password in DB
     await DB.from('admins').update({password:newPass}).eq('id',data.id);
     // Send email with new password
-    if(typeof emailjs!=='undefined'&&window.EMAILJS_PUBLIC_KEY!=='YOUR_PUBLIC_KEY'){
+    if(typeof emailjs!=='undefined'&&window.EMAILJS_PUBLIC_KEY!=='QIa4qHaHsbai1_iqm'){
       await emailjs.send('ntsc_service','template_tiie4cv',{
         to_email:email,
         to_name:data.fullname||username,
