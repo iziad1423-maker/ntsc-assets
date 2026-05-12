@@ -389,20 +389,20 @@ html[dir="ltr"] .ni:hover{transform:translateX(2px)}
           <input class="si-box" type="text" id="q" placeholder="🔍 Search..." oninput="renderTable()">
           <select class="sel" id="ft" onchange="renderTable()">
             <option value="" data-t="all_types">All Types</option>
-            <option data-t="t_laptop">Laptop</option>
-            <option data-t="t_monitor">Monitor</option>
-            <option data-t="t_phone">Phone</option>
-            <option data-t="t_printer">Printer</option>
-            <option data-t="t_router">Router</option>
-            <option data-t="t_tablet">Tablet</option>
-            <option data-t="t_other">Other</option>
+            <option value="Laptop" data-t="t_laptop">Laptop</option>
+            <option value="Monitor" data-t="t_monitor">Monitor</option>
+            <option value="Phone" data-t="t_phone">Phone</option>
+            <option value="Printer" data-t="t_printer">Printer</option>
+            <option value="Router" data-t="t_router">Router</option>
+            <option value="Tablet" data-t="t_tablet">Tablet</option>
+            <option value="Other" data-t="t_other">Other</option>
           </select>
           <select class="sel" id="fs" onchange="renderTable()">
             <option value="" data-t="all_status">All Statuses</option>
-            <option data-t="s_ass">Assigned</option>
-            <option data-t="s_avail">Available</option>
-            <option data-t="s_maint">Maintenance</option>
-            <option data-t="s_broken">Out of Service</option>
+            <option value="Assigned" data-t="s_ass">Assigned</option>
+            <option value="Available" data-t="s_avail">Available</option>
+            <option value="Maintenance" data-t="s_maint">Maintenance</option>
+            <option value="Out of Service" data-t="s_broken">Out of Service</option>
           </select>
           <button class="btn btn-gh btn-sm" onclick="loadAssets()">🔄</button>
           <button class="btn btn-gh btn-sm" onclick="exportCSV()"><span data-t="btn_export">⬇ Export</span></button>
@@ -584,13 +584,13 @@ html[dir="ltr"] .ni:hover{transform:translateX(2px)}
       <div class="fg2">
         <div class="fg"><label data-t="lbl_type">Type *</label>
           <select id="f-type">
-            <option data-t="t_laptop">Laptop</option>
-            <option data-t="t_monitor">Monitor</option>
-            <option data-t="t_phone">Phone</option>
-            <option data-t="t_printer">Printer</option>
-            <option data-t="t_router">Router</option>
-            <option data-t="t_tablet">Tablet</option>
-            <option data-t="t_other">Other</option>
+            <option value="Laptop" data-t="t_laptop">Laptop</option>
+            <option value="Monitor" data-t="t_monitor">Monitor</option>
+            <option value="Phone" data-t="t_phone">Phone</option>
+            <option value="Printer" data-t="t_printer">Printer</option>
+            <option value="Router" data-t="t_router">Router</option>
+            <option value="Tablet" data-t="t_tablet">Tablet</option>
+            <option value="Other" data-t="t_other">Other</option>
           </select>
         </div>
         <div class="fg"><label data-t="lbl_status">Status *</label>
@@ -919,9 +919,9 @@ async function saveAsset(){
       await logAction('Added',`تم Added: ${name} → ${rec.assigned_to||'غير محدد'}`);
     }
     if(err)throw err;
-    toast(editId?'✅ تم الModified':'✅ تم الAdded');
+    toast(editId ? (currentLang==='ar'?'✅ تم التعديل':'✅ Updated') : (currentLang==='ar'?'✅ تم الإضافة':'✅ Asset added'));
     closeModal(); loadAssets();
-    if(!editId) sendEmailNotification('➕ تم Add New Asset',
+    if(!editId) sendEmailNotification(currentLang==='ar'?'➕ تم إضافة أصل جديد':'➕ New Asset Added',
       `الأصل: ${rec.name} | Type: ${rec.asset_type} | Brand: ${rec.brand||'—'} | الAssigned إليه: ${rec.assigned_to||'—'} | Department: ${rec.department||'—'}`
     );
   }catch(e){toast('❌ '+e.message,false);}
@@ -1113,11 +1113,23 @@ function renderTable(){
   const q=document.getElementById('q').value.toLowerCase();
   const ft=document.getElementById('ft').value;
   const fs=document.getElementById('fs').value;
+  // Map English filter values to include Arabic equivalents
+  const typeMap={'Laptop':['Laptop','لابتوب'],'Monitor':['Monitor','شاشة'],'Phone':['Phone','هاتف'],
+    'Printer':['Printer','طابعة'],'Router':['Router','راوتر'],'Tablet':['Tablet','تابلت'],'Other':['Other','أخرى']};
+  const statMap={'Assigned':['Assigned','مُعهَّد'],'Available':['Available','متاح'],
+    'Maintenance':['Maintenance','صيانة'],'Out of Service':['Out of Service','مُعطَّل']};
   const f=assets.filter(a=>{
-    const mq=!q||(a.name+a.serial+a.assigned_to+a.department+(a.brand||'')).toLowerCase().includes(q);
-    return mq&&(!ft||a.asset_type===ft)&&(!fs||a.status===fs);
+    const mq=!q||(a.name+(a.serial||'')+(a.assigned_to||'')+(a.department||'')+(a.brand||'')).toLowerCase().includes(q);
+    const typeMatch=!ft||(typeMap[ft]||[ft]).includes(a.asset_type);
+    const statMatch=!fs||(statMap[fs]||[fs]).includes(a.status);
+    return mq&&typeMatch&&statMatch;
   });
-  const bCls={}; bCls[t('s_ass')]='bg'; bCls[t('s_avail')]='bb'; bCls[t('s_maint')]='bw'; bCls[t('s_broken')]='br';
+  const bCls={
+    'Assigned':'bg','مُعهَّد':'bg',
+    'Available':'bb','متاح':'bb',
+    'Maintenance':'bw','صيانة':'bw',
+    'Out of Service':'br','مُعطَّل':'br'
+  };
   const tbody=document.getElementById('tbody');
   if(!f.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="ei">🔍</div><p>No results found</p></div></td></tr>`;return;}
   tbody.innerHTML=f.map(a=>{
@@ -1146,9 +1158,15 @@ function renderReports(){
   const tc={},sc={};
   assets.forEach(a=>{tc[a.asset_type]=(tc[a.asset_type]||0)+1;sc[a.status]=(sc[a.status]||0)+1;});
   const tm=Math.max(...Object.values(tc),1),sm=Math.max(...Object.values(sc),1);
-  const clrs={};
-  clrs[t('t_laptop')]='#2ecc71'; clrs[t('t_monitor')]='#3498db'; clrs[t('t_phone')]='#f39c12';
-  clrs[t('t_printer')]='#e74c3c'; clrs[t('t_router')]='#9b59b6'; clrs[t('t_tablet')]='#1abc9c'; clrs[t('t_other')]='#7f8c8d';
+  const clrs={
+    'Laptop':'#2ecc71','لابتوب':'#2ecc71',
+    'Monitor':'#3498db','شاشة':'#3498db',
+    'Phone':'#f39c12','هاتف':'#f39c12',
+    'Printer':'#e74c3c','طابعة':'#e74c3c',
+    'Router':'#9b59b6','راوتر':'#9b59b6',
+    'Tablet':'#1abc9c','تابلت':'#1abc9c',
+    'Other':'#7f8c8d','أخرى':'#7f8c8d'
+  };
   const sc2={Assigned:'#2ecc71',Available:'#3498db',صيانة:'#f39c12',مُعطَّل:'#e74c3c'};
   document.getElementById('rpt-grid').innerHTML=
     `<div class="rpt-card"><h3>Asset Types</h3>
@@ -1156,7 +1174,7 @@ function renderReports(){
     <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/tm*100)}%;background:${clrs[k]||'#888'}"></div></div>
     <span class="bar-val">${v}</span></div>`).join('')}</div>
     <div class="rpt-card"><h3>Status</h3>
-    ${[t('s_ass'),t('s_avail'),t('s_maint'),t('s_broken')].map(s=>`<div class="bar-row"><span class="bar-lbl">${s}</span>
+    ${['Assigned','Available','Maintenance','Out of Service','مُعهَّد','متاح','صيانة','مُعطَّل'].filter(s=>sc[s]>0).map(s=>`<div class="bar-row"><span class="bar-lbl">${s}</span>
     <div class="bar-track"><div class="bar-fill" style="width:${Math.round((sc[s]||0)/sm*100)}%;background:${sc2[s]}"></div></div>
     <span class="bar-val">${sc[s]||0}</span></div>`).join('')}</div>`;
   const dm={};
@@ -1301,7 +1319,7 @@ function closeUserModal(){document.getElementById('uov').classList.remove('open'
 function showPanel(name,el){
   if(name==='profile'){loadProfile();}
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   el.classList.add('active');
   if(name==='log')loadLogs();
