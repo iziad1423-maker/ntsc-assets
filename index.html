@@ -576,6 +576,16 @@ html[dir="ltr"] .ni:hover{transform:translateX(2px)}
   </main>
 </div>
 
+
+<!-- ALERT MODAL -->
+<div id="alert-modal" style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px)">
+  <div style="background:rgba(10,46,39,0.97);border:1px solid rgba(46,204,113,0.3);border-radius:16px;padding:28px 32px;width:340px;max-width:92vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+    <div style="font-size:36px;margin-bottom:12px" id="alert-icon">⚠️</div>
+    <p id="alert-msg" style="font-size:14px;color:rgba(255,255,255,0.9);margin-bottom:20px;line-height:1.7"></p>
+    <button onclick="document.getElementById('alert-modal').style.display='none'"
+      style="padding:10px 32px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--ntsc),var(--ntsc-light));color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">OK</button>
+  </div>
+</div>
 <!-- ASSET MODAL -->
 <div class="ov" id="ov">
   <div class="modal">
@@ -803,7 +813,11 @@ html[dir="ltr"] .ni:hover{transform:translateX(2px)}
 <script>
 
 // ── GLOBALS ────────────────────────────────────────────────────────────────
-const ICONS={'Laptop':'💻','Monitor':'🖥️','Phone':'📱','Printer':'🖨️','Router':'📡','Tablet':'📟','Other':'📦'};
+const ICONS={
+  'Laptop':'💻','Monitor':'🖥️','Phone':'📱','Printer':'🖨️','Router':'📡','Tablet':'📟','Other':'📦',
+  'لابتوب':'💻','شاشة':'🖥️','هاتف':'📱','طابعة':'🖨️','راوتر':'📡','تابلت':'📟','أخرى':'📦'
+};
+function getIcon(type){ return ICONS[type] || '📦'; }
 let DB=null, assets=[], currentUser=null, editId=null;
 
 // ── INIT ───────────────────────────────────────────────────────────────────
@@ -826,10 +840,10 @@ async function checkSession(){
 function saveConfig(){
   const url=document.getElementById('sb-url').value.trim();
   const key=document.getElementById('sb-key').value.trim();
-  if(!url||!key){alert('أدخل URL و Key');return;}
+  if(!url||!key){showAlert(currentLang==='ar'?'أدخل URL و Key':'Please enter URL and Key');return;}
   localStorage.setItem('sb_url',url);
   localStorage.setItem('sb_key',key);
-  try{ DB=window.supabase.createClient(url,key); }catch(e){alert('Error: '+e.message);return;}
+  try{ DB=window.supabase.createClient(url,key); }catch(e){showAlert('Error: '+e.message, '❌');return;}
   hide('setup-screen'); show('login-screen','flex');
 }
 function showSetup(){ hide('login-screen'); show('setup-screen','flex'); }
@@ -895,7 +909,7 @@ async function loadAssets(){
 
 async function saveAsset(){
   const name=document.getElementById('f-name').value.trim();
-  if(!name){alert('أدخل اسم الأصل');return;}
+  if(!name){showAlert(currentLang==='ar'?'أدخل اسم الأصل':'Please enter asset name', '⚠️');return;}
   const btn=document.getElementById('save-btn');
   btn.textContent='⏳...'; btn.disabled=true;
   const rec={
@@ -1030,7 +1044,7 @@ async function saveUser(){
   const username=document.getElementById('u-username').value.trim();
   const fullname=document.getElementById('u-fullname').value.trim();
   const password=document.getElementById('u-pass').value;
-  if(!username||!password){alert('Enter username وPassword');return;}
+  if(!username||!password){showAlert(currentLang==='ar'?'أدخل اسم المستخدم وكلمة المرور':'Please enter username and password', '⚠️');return;}
   const {error}=await DB.from('admins').insert([{username,fullname,password}]);
   if(error){toast('❌ '+error.message,false);return;}
   toast('✅ تم Added الأدمن');
@@ -2301,6 +2315,12 @@ window.addEventListener('load', () => {
   setTimeout(applyLang, 200);
 });
 
+
+function showAlert(msg, icon='⚠️'){
+  document.getElementById('alert-msg').textContent = msg;
+  document.getElementById('alert-icon').textContent = icon;
+  document.getElementById('alert-modal').style.display = 'flex';
+}
 </script>
 </body>
 </html>
